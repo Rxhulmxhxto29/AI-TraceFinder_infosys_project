@@ -1,0 +1,17 @@
+{
+  "name": "TraceFinder",
+  "description": "Forensic Scanner Identification System using Machine Learning and Digital Forensics",
+  "repository": "https://github.com/AI-TraceFinder/Rahul_Mahato-TraceFinder",
+  "keywords": ["forensics", "scanner-detection", "machine-learning", "flask", "opencv"],
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ],
+  "env": {
+    "FLASK_ENV": {
+      "description": "Flask environment",
+      "value": "production"
+    }
+  }
+}

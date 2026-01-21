@@ -1,6 +1,22 @@
 # TraceFinder - Forensic Scanner Identification System
 
-A professional forensic analysis tool that identifies and traces scanner devices through digital fingerprint analysis.
+[![Python 3.13](https://img.shields.io/badge/python-3.13-blue.svg)](https://www.python.org/downloads/)
+[![Flask](https://img.shields.io/badge/flask-3.0.0-green.svg)](https://flask.palletsprojects.com/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+🔍 **Advanced forensic analysis system for identifying scanners from scanned documents using machine learning and digital forensics techniques.**
+
+## 🌐 Live Demo
+
+**🚀 Try it now:** [Click here to launch TraceFinder](https://github.com/AI-TraceFinder/Rahul_Mahato-TraceFinder#quick-deploy)
+
+### Quick Deploy Options
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/AI-TraceFinder/Rahul_Mahato-TraceFinder)
+[![Deploy to Railway](https://railway.app/button.svg)](https://railway.app/template?repo=AI-TraceFinder/Rahul_Mahato-TraceFinder)
+[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/AI-TraceFinder/Rahul_Mahato-TraceFinder)
+
+**Deploy in 1-click** - Choose any platform above to get your own live instance!
 
 ## 🎯 Overview
 
@@ -129,6 +145,44 @@ TraceFinder/
 - **Frontend**: HTML5, CSS3, JavaScript
 - **Data Analysis**: NumPy, SciPy
 
+## 🌐 Deploy Your Own Instance
+
+### Option 1: Render (Recommended)
+1. Click the "Deploy to Render" button above
+2. Create a Render account (free)
+3. Your app will be live in 5 minutes!
+4. Access at: `https://your-app-name.onrender.com`
+
+### Option 2: Railway
+1. Click "Deploy to Railway" button
+2. Sign in with GitHub
+3. Deploy automatically from repository
+4. Get your live URL instantly
+
+### Option 3: Heroku
+1. Click "Deploy to Heroku" button
+2. Create/login to Heroku account
+3. Name your app
+4. Deploy in one click
+
+### Option 4: Local Deployment
+```bash
+# Clone and run locally
+git clone https://github.com/AI-TraceFinder/Rahul_Mahato-TraceFinder.git
+cd Rahul_Mahato-TraceFinder
+pip install -r requirements.txt
+python app.py
+# Visit http://localhost:5000
+```
+
+## 🎓 Documentation
+
+- **[Installation Guide](INSTALLATION.md)** - Detailed setup instructions
+- **[Training Guide](TRAINING_GUIDE.md)** - How to train with your dataset
+- **[API Documentation](API_DOCUMENTATION.md)** - REST API reference
+- **[Features](FEATURES.md)** - Complete feature list
+- **[FAQ](FAQ.md)** - Frequently asked questions
+
 ## 📝 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
@@ -136,15 +190,32 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## 👨‍💻 Author
 
 **Rahul Mahato**
+- GitHub: [@AI-TraceFinder](https://github.com/AI-TraceFinder)
+- Project: [TraceFinder](https://github.com/AI-TraceFinder/Rahul_Mahato-TraceFinder)
 
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
 ## 📧 Contact
 
-For questions or support, please open an issue on GitHub.
+For questions or support:
+- 🐛 [Open an Issue](https://github.com/AI-TraceFinder/Rahul_Mahato-TraceFinder/issues)
+- 💬 Discussions on GitHub
+- 📖 Check [Documentation](DOCUMENTATION_INDEX.md)
+
+## ⭐ Show Your Support
+
+Give a ⭐ if this project helped you!
 
 ---
 
 **Note**: This tool is for educational and legitimate forensic purposes only. Always ensure you have proper authorization before analyzing documents.
+
+**Made with ❤️ by Rahul Mahato | TraceFinder © 2026**

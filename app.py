@@ -419,4 +419,12 @@ if __name__ == '__main__':
     print("Starting server on http://localhost:5000")
     print("Press CTRL+C to quit")
     print("=" * 60)
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    
+    # Get port from environment variable (for deployment platforms)
+    port = int(os.environ.get('PORT', 5000))
+    
+    # Run in production mode if PORT is set (deployment)
+    if 'PORT' in os.environ:
+        app.run(host='0.0.0.0', port=port, debug=False)
+    else:
+        app.run(debug=True, host='0.0.0.0', port=port)
