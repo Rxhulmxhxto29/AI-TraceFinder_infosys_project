@@ -8,15 +8,19 @@
 
 ## 🌐 Live Demo
 
-**🚀 Try it now:** [Click here to launch TraceFinder](https://github.com/AI-TraceFinder/Rahul_Mahato-TraceFinder#quick-deploy)
-
-### Quick Deploy Options
+**🚀 Deploy Your Own Instance on Render (100% Free)**
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/AI-TraceFinder/Rahul_Mahato-TraceFinder)
-[![Deploy to Railway](https://railway.app/button.svg)](https://railway.app/template?repo=AI-TraceFinder/Rahul_Mahato-TraceFinder)
-[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/AI-TraceFinder/Rahul_Mahato-TraceFinder)
 
-**Deploy in 1-click** - Choose any platform above to get your own live instance!
+### Easy 3-Step Deployment:
+
+1. **Click** the "Deploy to Render" button above
+2. **Sign in** with your GitHub account (free)
+3. **Deploy** - Your app will be live in 3-5 minutes!
+
+Your live URL: `https://your-app-name.onrender.com`
+
+✅ **100% Free** | ✅ **No Credit Card** | ✅ **Always Online**
 
 ## 🎯 Overview
 
@@ -147,25 +151,23 @@ TraceFinder/
 
 ## 🌐 Deploy Your Own Instance
 
-### Option 1: Render (Recommended)
-1. Click the "Deploy to Render" button above
-2. Create a Render account (free)
-3. Your app will be live in 5 minutes!
-4. Access at: `https://your-app-name.onrender.com`
+### Recommended: Render.com (Free Forever)
 
-### Option 2: Railway
-1. Click "Deploy to Railway" button
-2. Sign in with GitHub
-3. Deploy automatically from repository
-4. Get your live URL instantly
+**Why Render?**
+- ✅ 100% Free tier with no credit card required
+- ✅ Automatic deployment from GitHub
+- ✅ HTTPS included
+- ✅ Always-on service (doesn't sleep)
+- ✅ Easy to use dashboard
 
-### Option 3: Heroku
-1. Click "Deploy to Heroku" button
-2. Create/login to Heroku account
-3. Name your app
-4. Deploy in one click
+**Deploy Now:**
+1. Click the "Deploy to Render" button at the top
+2. Authorize Render to access your GitHub
+3. Click "Deploy" - Done! 🎉
 
-### Option 4: Local Deployment
+Your app will be live at: `https://tracefinder-XXXX.onrender.com`
+
+### Alternative: Run Locally
 ```bash
 # Clone and run locally
 git clone https://github.com/AI-TraceFinder/Rahul_Mahato-TraceFinder.git
