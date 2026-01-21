@@ -1,0 +1,15 @@
+# Example CSV Template for TraceFinder Training
+
+# Save this as: dataset.csv
+# Then run: python modules\model_trainer.py dataset.csv
+
+image_path,scanner_model
+dataset/canon_lide300_001.jpg,Canon LiDE 300
+dataset/canon_lide300_002.jpg,Canon LiDE 300
+dataset/canon_lide300_003.jpg,Canon LiDE 300
+dataset/epson_v600_001.jpg,Epson Perfection V600
+dataset/epson_v600_002.jpg,Epson Perfection V600
+dataset/epson_v600_003.jpg,Epson Perfection V600
+dataset/hp_scanjet_001.jpg,HP ScanJet Pro 2500
+dataset/hp_scanjet_002.jpg,HP ScanJet Pro 2500
+dataset/hp_scanjet_003.jpg,HP ScanJet Pro 2500

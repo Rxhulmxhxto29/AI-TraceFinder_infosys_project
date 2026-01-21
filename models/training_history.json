@@ -1,0 +1,15 @@
+{
+    "train_accuracy": 1.0,
+    "test_accuracy": 1.0,
+    "n_samples": 7,
+    "n_features": 23,
+    "n_classes": 1,
+    "classes": [
+        "Canon120-1"
+    ],
+    "confusion_matrix": [
+        [
+            2
+        ]
+    ]
+}

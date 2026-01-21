@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - TraceFinder</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <i class="fas fa-fingerprint"></i>
+                <span>TraceFinder</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="/">Home</a></li>
+                <li><a href="/about" class="active">About</a></li>
+                <li><a href="#" onclick="showHelp()">Help</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="hero">
+        <div class="container">
+            <h1>About TraceFinder</h1>
+            <p class="subtitle">Advanced Forensic Scanner Identification Technology</p>
+        </div>
+    </div>
+
+    <div class="container main-content">
+        <div class="about-section">
+            <div class="about-card">
+                <h2><i class="fas fa-info-circle"></i> What is TraceFinder?</h2>
+                <p>
+                    TraceFinder is a sophisticated forensic analysis tool designed to identify and trace 
+                    scanner devices through digital fingerprint analysis. Using advanced machine learning 
+                    and image processing techniques, it can determine which scanner model was used to 
+                    create a digital document.
+                </p>
+            </div>
+
+            <div class="about-card">
+                <h2><i class="fas fa-cogs"></i> How It Works</h2>
+                <div class="methodology">
+                    <div class="method-item">
+                        <h3>1. PRNU Analysis</h3>
+                        <p>Photo Response Non-Uniformity pattern extraction identifies unique sensor characteristics</p>
+                    </div>
+                    <div class="method-item">
+                        <h3>2. Texture Analysis</h3>
+                        <p>Gray Level Co-occurrence Matrix (GLCM) analysis examines texture patterns</p>
+                    </div>
+                    <div class="method-item">
+                        <h3>3. Frequency Domain Analysis</h3>
+                        <p>FFT-based analysis detects scanner-specific periodic artifacts</p>
+                    </div>
+                    <div class="method-item">
+                        <h3>4. Metadata Forensics</h3>
+                        <p>EXIF data extraction and analysis for additional verification</p>
+                    </div>
+                    <div class="method-item">
+                        <h3>5. Machine Learning</h3>
+                        <p>AI-powered classification for accurate scanner identification</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="about-card">
+                <h2><i class="fas fa-bullseye"></i> Use Cases</h2>
+                <ul class="use-cases">
+                    <li><i class="fas fa-check"></i> Digital forensic investigations</li>
+                    <li><i class="fas fa-check"></i> Document authenticity verification</li>
+                    <li><i class="fas fa-check"></i> Copyright and IP protection</li>
+                    <li><i class="fas fa-check"></i> Law enforcement investigations</li>
+                    <li><i class="fas fa-check"></i> Academic research in digital forensics</li>
+                    <li><i class="fas fa-check"></i> Security auditing</li>
+                </ul>
+            </div>
+
+            <div class="about-card">
+                <h2><i class="fas fa-graduation-cap"></i> Technology Stack</h2>
+                <div class="tech-stack">
+                    <div class="tech-category">
+                        <h4>Backend</h4>
+                        <p>Python, Flask, NumPy, OpenCV, scikit-learn, TensorFlow</p>
+                    </div>
+                    <div class="tech-category">
+                        <h4>Image Processing</h4>
+                        <p>Pillow, scikit-image, SciPy, PyWavelets</p>
+                    </div>
+                    <div class="tech-category">
+                        <h4>Frontend</h4>
+                        <p>HTML5, CSS3, JavaScript (ES6+)</p>
+                    </div>
+                    <div class="tech-category">
+                        <h4>Reporting</h4>
+                        <p>ReportLab, Pandas, Matplotlib</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="about-card">
+                <h2><i class="fas fa-user"></i> About the Developer</h2>
+                <p>
+                    <strong>Rahul Mahato</strong> - Developer and researcher specializing in digital forensics 
+                    and machine learning. TraceFinder represents advanced research in scanner identification 
+                    and forensic analysis techniques.
+                </p>
+            </div>
+
+            <div class="about-card disclaimer">
+                <h2><i class="fas fa-exclamation-triangle"></i> Important Notice</h2>
+                <p>
+                    <strong>Legal & Ethical Use:</strong> This tool is designed for legitimate forensic, 
+                    educational, and research purposes only. Users must ensure they have proper authorization 
+                    before analyzing any documents. The developers assume no liability for misuse of this tool.
+                </p>
+                <p>
+                    <strong>Accuracy:</strong> While TraceFinder uses advanced algorithms, results depend on 
+                    image quality, scanner database completeness, and other factors. Always use results as 
+                    part of a comprehensive investigation, not as sole evidence.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 TraceFinder - Forensic Scanner Identification System</p>
+            <p>Developed by Rahul Mahato | For educational and forensic purposes only</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
