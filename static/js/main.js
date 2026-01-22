@@ -97,6 +97,7 @@ function displayResults(results) {
     }, 100);
     
     // Dashboard analytics
+    createDashboardCharts(results);
     updateStatCards(results);
     
     // Features summary
@@ -165,6 +166,76 @@ function updateStatCards(results) {
     // Metadata Status
     const metadataStatus = results.metadata_status || '-';
     document.getElementById('metadataStatus').textContent = metadataStatus;
+}
+
+// Create dashboard charts
+function createDashboardCharts(results) {
+    // Confidence Distribution Chart
+    const confidenceValue = (results.confidence || 0) * 100;
+    const uncertaintyValue = 100 - confidenceValue;
+    
+    const confidenceCtx = document.getElementById('confidenceChart');
+    if (confidenceCtx) {
+        new Chart(confidenceCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Confidence', 'Uncertainty'],
+                datasets: [{
+                    data: [confidenceValue, uncertaintyValue],
+                    backgroundColor: ['#4A90E2', '#E0E0E0'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    }
+    
+    // Feature Quality Metrics Chart
+    const featureCtx = document.getElementById('featureQualityChart');
+    if (featureCtx) {
+        new Chart(featureCtx, {
+            type: 'radar',
+            data: {
+                labels: ['PRNU', 'Texture', 'Noise', 'Frequency', 'Metadata'],
+                datasets: [{
+                    label: 'Quality',
+                    data: [
+                        results.prnu_score || 50,
+                        results.texture_score || 50,
+                        results.noise_score || 50,
+                        results.frequency_score || 50,
+                        results.metadata_score || 50
+                    ],
+                    backgroundColor: 'rgba(74, 144, 226, 0.2)',
+                    borderColor: 'rgba(74, 144, 226, 1)',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    }
 }
 
 // Reset analysis
