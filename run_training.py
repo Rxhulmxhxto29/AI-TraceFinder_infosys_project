@@ -1,12 +1,15 @@
 import sys
-sys.path.insert(0, 'C:\\TraceFinder')
+import os
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, current_dir)
 
 from modules.model_trainer import train_from_csv
 
 print("Starting training...")
 trainer = train_from_csv(
-    csv_path='C:\\TraceFinder\\dataset_corrected.csv',
+    csv_path=os.path.join(current_dir, 'multi_scanner_dataset.csv'),
     image_base_path='',
-    output_dir='C:\\TraceFinder\\models'
+    output_dir=os.path.join(current_dir, 'models')
 )
 print("Training complete!")

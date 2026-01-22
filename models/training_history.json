@@ -1,15 +1,21 @@
 {
-    "train_accuracy": 1.0,
-    "test_accuracy": 1.0,
-    "n_samples": 7,
+    "train_accuracy": 0.5833333333333334,
+    "test_accuracy": 0.5,
+    "n_samples": 39,
     "n_features": 23,
-    "n_classes": 1,
+    "n_classes": 2,
     "classes": [
-        "Canon120-1"
+        "Canon",
+        "HP"
     ],
     "confusion_matrix": [
         [
-            2
+            0,
+            3
+        ],
+        [
+            0,
+            3
         ]
     ]
 }

@@ -4,8 +4,9 @@ import cv2
 import os
 import pickle
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 import json
 from modules.feature_extractor import FeatureExtractor
@@ -18,6 +19,7 @@ class ModelTrainer:
         self.feature_extractor = FeatureExtractor()
         self.image_processor = ImageProcessor()
         self.model = None
+        self.scaler = StandardScaler()
         self.label_encoder = None
         self.feature_names = []
         self.training_history = {}
@@ -160,6 +162,38 @@ class ModelTrainer:
         
         return np.array(vector)
     
+    def _balance_dataset(self, X, y):
+        """Balance dataset by oversampling minority class with slight variations"""
+        unique, counts = np.unique(y, return_counts=True)
+        max_count = np.max(counts)
+        
+        X_balanced = []
+        y_balanced = []
+        
+        for class_label in unique:
+            # Get samples for this class
+            class_indices = np.where(y == class_label)[0]
+            class_samples = X[class_indices]
+            
+            # Add original samples
+            X_balanced.append(class_samples)
+            y_balanced.extend([class_label] * len(class_samples))
+            
+            # If minority class, oversample
+            if len(class_samples) < max_count:
+                n_to_add = max_count - len(class_samples)
+                # Randomly sample with replacement and add small noise
+                indices = np.random.choice(len(class_samples), size=n_to_add, replace=True)
+                synthetic_samples = class_samples[indices].copy().astype(np.float64)
+                # Add small random noise (0.1% of std)
+                noise = np.random.normal(0, 0.001, synthetic_samples.shape)
+                synthetic_samples = synthetic_samples + noise
+                
+                X_balanced.append(synthetic_samples)
+                y_balanced.extend([class_label] * n_to_add)
+        
+        return np.vstack(X_balanced), np.array(y_balanced)
+    
     def train_model(self, X, y, test_size=0.2, random_state=42):
         """
         Train Random Forest classifier
@@ -176,34 +210,48 @@ class ModelTrainer:
         self.label_encoder = LabelEncoder()
         y_encoded = self.label_encoder.fit_transform(y)
         
-        # Split dataset
+        # Check class distribution
+        unique, counts = np.unique(y, return_counts=True)
+        print("\nClass distribution:")
+        for cls, cnt in zip(unique, counts):
+            print(f"  {cls}: {cnt} samples")
+        
+        # Split dataset - use 85% training for small datasets
         X_train, X_test, y_train, y_test = train_test_split(
-            X, y_encoded, test_size=test_size, random_state=random_state, stratify=y_encoded
+            X, y_encoded, test_size=0.15, random_state=random_state, stratify=y_encoded
         )
         
-        print(f"Training set: {len(X_train)} samples")
+        # Balance training set using SMOTE-like duplication for minority class
+        X_train_balanced, y_train_balanced = self._balance_dataset(X_train, y_train)
+        
+        # Scale features for better SVM performance
+        X_train_scaled = self.scaler.fit_transform(X_train_balanced)
+        X_test_scaled = self.scaler.transform(X_test)
+        
+        print(f"\nOriginal training set: {len(X_train)} samples")
+        print(f"Balanced training set: {len(X_train_balanced)} samples")
         print(f"Test set: {len(X_test)} samples")
         print(f"Number of classes: {len(self.label_encoder.classes_)}")
         print(f"Classes: {list(self.label_encoder.classes_)}")
         
-        # Train Random Forest
-        self.model = RandomForestClassifier(
-            n_estimators=200,
-            max_depth=20,
-            min_samples_split=5,
-            min_samples_leaf=2,
+        # Try SVM with RBF kernel - better for small datasets
+        self.model = SVC(
+            kernel='rbf',
+            C=10.0,
+            gamma='scale',
+            class_weight='balanced',
             random_state=random_state,
-            n_jobs=-1,
-            verbose=1
+            probability=True,  # Enable probability estimates
+            verbose=True
         )
         
-        self.model.fit(X_train, y_train)
+        self.model.fit(X_train_scaled, y_train_balanced)
         
         # Evaluate
-        y_pred_train = self.model.predict(X_train)
-        y_pred_test = self.model.predict(X_test)
+        y_pred_train = self.model.predict(X_train_scaled)
+        y_pred_test = self.model.predict(X_test_scaled)
         
-        train_accuracy = accuracy_score(y_train, y_pred_train)
+        train_accuracy = accuracy_score(y_train_balanced, y_pred_train)
         test_accuracy = accuracy_score(y_test, y_pred_test)
         
         print(f"\nTraining accuracy: {train_accuracy * 100:.2f}%")
@@ -227,7 +275,7 @@ class ModelTrainer:
         return train_accuracy, test_accuracy
     
     def save_model(self, model_dir='models'):
-        """Save trained model, encoder, and metadata"""
+        """Save trained model, encoder, scaler, and metadata"""
         os.makedirs(model_dir, exist_ok=True)
         
         # Save model
@@ -235,6 +283,12 @@ class ModelTrainer:
         with open(model_path, 'wb') as f:
             pickle.dump(self.model, f)
         print(f"Model saved to {model_path}")
+        
+        # Save scaler
+        scaler_path = os.path.join(model_dir, 'feature_scaler.pkl')
+        with open(scaler_path, 'wb') as f:
+            pickle.dump(self.scaler, f)
+        print(f"Feature scaler saved to {scaler_path}")
         
         # Save label encoder
         encoder_path = os.path.join(model_dir, 'label_encoder.pkl')
