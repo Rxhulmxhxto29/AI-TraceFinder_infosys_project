@@ -3,9 +3,192 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About - TraceFinder</title>
+    <title>About & Help - TraceFinder</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .main-content {
+            min-height: 60vh;
+        }
+        
+        .help-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 0;
+            justify-content: flex-start;
+            flex-wrap: wrap;
+        }
+        
+        .help-tab {
+            padding: 0.8rem 1.2rem;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+            white-space: nowrap;
+            border-radius: 8px 8px 0 0;
+            margin-bottom: -2px;
+        }
+        
+        .help-tab:hover {
+            color: #667eea;
+            background: #f8f9ff;
+            border-color: #667eea;
+        }
+        
+        .help-tab.active {
+            color: #667eea;
+            background: white;
+            border-bottom-color: #667eea;
+            border-top-color: #667eea;
+            border-left-color: #667eea;
+            border-right-color: #667eea;
+        }
+        
+        .help-content {
+            display: none;
+        }
+        
+        .help-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .instruction-step {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border-left: 4px solid #667eea;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .instruction-step h3 {
+            color: #667eea;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .instruction-step .step-number {
+            background: #667eea;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .feature-box {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transition: transform 0.3s;
+        }
+        
+        .feature-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.15);
+        }
+        
+        .feature-box i {
+            font-size: 2.5rem;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+        
+        .faq-item {
+            background: white;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .faq-item:hover {
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        }
+        
+        .faq-question {
+            font-weight: 600;
+            color: #2c3e50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            color: #555;
+            margin-top: 0;
+        }
+        
+        .faq-item.active .faq-answer {
+            max-height: 500px;
+            margin-top: 1rem;
+        }
+        
+        .faq-item.active .faq-icon {
+            transform: rotate(180deg);
+        }
+        
+        .faq-icon {
+            transition: transform 0.3s;
+        }
+        
+        .confidence-scale {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .confidence-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .confidence-badge-demo {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            min-width: 120px;
+            text-align: center;
+        }
+        
+        .badge-very-high { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; }
+        .badge-high { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .badge-moderate { background: linear-gradient(135deg, #f2994a 0%, #f2c94c 100%); color: white; }
+        .badge-low { background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%); color: white; }
+    </style>
 </head>
 <body>
     <nav class="navbar">
@@ -16,123 +199,788 @@
             </div>
             <ul class="nav-menu">
                 <li><a href="/">Home</a></li>
-                <li><a href="/about" class="active">About</a></li>
-                <li><a href="#" onclick="showHelp()">Help</a></li>
+                <li><a href="/history_page">History</a></li>
+                <li><a href="/about" class="active">About & Help</a></li>
             </ul>
         </div>
     </nav>
 
     <div class="hero">
         <div class="container">
-            <h1>About TraceFinder</h1>
-            <p class="subtitle">Advanced Forensic Scanner Identification Technology</p>
+            <h1><i class="fas fa-book-open"></i> About & Help Center</h1>
+            <p class="subtitle">Everything you need to know about TraceFinder</p>
         </div>
     </div>
 
     <div class="container main-content">
-        <div class="about-section">
-            <div class="about-card">
-                <h2><i class="fas fa-info-circle"></i> What is TraceFinder?</h2>
-                <p>
-                    TraceFinder is a sophisticated forensic analysis tool designed to identify and trace 
-                    scanner devices through digital fingerprint analysis. Using advanced machine learning 
-                    and image processing techniques, it can determine which scanner model was used to 
-                    create a digital document.
-                </p>
-            </div>
+        <div class="help-tabs">
+            <button class="help-tab active" onclick="showHelpTab('overview')">
+                <i class="fas fa-home"></i> Overview
+            </button>
+            <button class="help-tab" onclick="showHelpTab('instructions')">
+                <i class="fas fa-book"></i> Instructions
+            </button>
+            <button class="help-tab" onclick="showHelpTab('features')">
+                <i class="fas fa-star"></i> Features
+            </button>
+            <button class="help-tab" onclick="showHelpTab('faq')">
+                <i class="fas fa-question-circle"></i> FAQ
+            </button>
+            <button class="help-tab" onclick="showHelpTab('technical')">
+                <i class="fas fa-code"></i> Technical
+            </button>
+        </div>
 
-            <div class="about-card">
-                <h2><i class="fas fa-cogs"></i> How It Works</h2>
-                <div class="methodology">
-                    <div class="method-item">
-                        <h3>1. PRNU Analysis</h3>
-                        <p>Photo Response Non-Uniformity pattern extraction identifies unique sensor characteristics</p>
+        <!-- Overview Tab -->
+        <div id="overview" class="help-content active">
+            <div class="about-section">
+                <div class="about-card">
+                    <h2><i class="fas fa-info-circle"></i> What is TraceFinder?</h2>
+                    <p>
+                        <strong>TraceFinder</strong> is a state-of-the-art forensic analysis platform designed to identify and trace 
+                        scanner devices through advanced digital fingerprint analysis. Leveraging machine learning, 
+                        computer vision, and forensic science, TraceFinder can determine which scanner model was used 
+                        to create a digital document with high accuracy.
+                    </p>
+                    <p>
+                        Our system analyzes multiple forensic indicators including sensor noise patterns, texture characteristics, 
+                        frequency domain artifacts, and metadata to build a comprehensive scanner profile. This makes TraceFinder 
+                        an invaluable tool for digital forensics, document authentication, and security investigations.
+                    </p>
+                </div>
+
+                <div class="about-card">
+                    <h2><i class="fas fa-bullseye"></i> Key Applications</h2>
+                    <ul class="use-cases">
+                        <li><i class="fas fa-check"></i> <strong>Digital Forensic Investigations:</strong> Identify the source device of scanned documents in legal cases</li>
+                        <li><i class="fas fa-check"></i> <strong>Document Authenticity Verification:</strong> Verify if documents were scanned by claimed devices</li>
+                        <li><i class="fas fa-check"></i> <strong>Copyright & IP Protection:</strong> Track unauthorized document reproduction</li>
+                        <li><i class="fas fa-check"></i> <strong>Law Enforcement:</strong> Aid in criminal investigations involving forged or tampered documents</li>
+                        <li><i class="fas fa-check"></i> <strong>Academic Research:</strong> Study scanner fingerprinting and forensic techniques</li>
+                        <li><i class="fas fa-check"></i> <strong>Security Auditing:</strong> Verify document chain of custody</li>
+                    </ul>
+                </div>
+
+                <div class="about-card">
+                    <h2><i class="fas fa-shield-alt"></i> Why TraceFinder?</h2>
+                    <div class="feature-grid">
+                        <div class="feature-box">
+                            <i class="fas fa-brain"></i>
+                            <h3>AI-Powered</h3>
+                            <p>Advanced machine learning models trained on extensive scanner databases for accurate identification</p>
+                        </div>
+                        <div class="feature-box">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <h3>Fast Analysis</h3>
+                            <p>Get results in seconds with real-time processing and instant confidence scoring</p>
+                        </div>
+                        <div class="feature-box">
+                            <i class="fas fa-chart-line"></i>
+                            <h3>Comprehensive Reports</h3>
+                            <p>Professional PDF reports with detailed forensic analysis and visualizations</p>
+                        </div>
+                        <div class="feature-box">
+                            <i class="fas fa-users"></i>
+                            <h3>User-Friendly</h3>
+                            <p>Intuitive interface designed for both experts and beginners</p>
+                        </div>
+                        <div class="feature-box">
+                            <i class="fas fa-database"></i>
+                            <h3>History Tracking</h3>
+                            <p>Keep records of all analyses with searchable history database</p>
+                        </div>
+                        <div class="feature-box">
+                            <i class="fas fa-lock"></i>
+                            <h3>Secure Processing</h3>
+                            <p>All analyses performed locally with optional data retention control</p>
+                        </div>
                     </div>
-                    <div class="method-item">
-                        <h3>2. Texture Analysis</h3>
-                        <p>Gray Level Co-occurrence Matrix (GLCM) analysis examines texture patterns</p>
+                </div>
+
+                <div class="about-card disclaimer">
+                    <h2><i class="fas fa-exclamation-triangle"></i> Important Legal Notice</h2>
+                    <p>
+                        <strong>Authorized Use Only:</strong> TraceFinder is designed exclusively for legitimate forensic, 
+                        educational, and research purposes. Users must ensure they have proper legal authorization 
+                        before analyzing any documents. Unauthorized use may violate privacy laws and regulations.
+                    </p>
+                    <p>
+                        <strong>Accuracy Disclaimer:</strong> While TraceFinder employs advanced algorithms and has been 
+                        extensively tested, results should be used as investigative leads rather than conclusive evidence. 
+                        Accuracy depends on factors including image quality, scanner database coverage, and document condition. 
+                        Always corroborate findings with additional evidence and expert analysis.
+                    </p>
+                    <p>
+                        <strong>No Liability:</strong> The developers assume no responsibility for misuse, erroneous results, 
+                        or any damages arising from the use of this tool. Users accept full responsibility for their use of TraceFinder.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instructions Tab -->
+        <div id="instructions" class="help-content">
+            <div class="about-section">
+                <div class="about-card">
+                    <h2><i class="fas fa-graduation-cap"></i> Getting Started with TraceFinder</h2>
+                    
+                    <div class="instruction-step">
+                        <h3>
+                            <span class="step-number">1</span>
+                            Scanner Detection
+                        </h3>
+                        <p><strong>Purpose:</strong> Identify which scanner model was used to create a scanned document.</p>
+                        <p><strong>Steps:</strong></p>
+                        <ol>
+                            <li>Navigate to the <strong>Scanner Detection</strong> tab on the home page</li>
+                            <li>Click "Choose File" or drag and drop your scanned image</li>
+                            <li>Supported formats: PNG, JPG, JPEG, TIFF, PDF</li>
+                            <li>Click "Analyze Scanner" button</li>
+                            <li>Wait for analysis (typically 5-10 seconds)</li>
+                            <li>Review results including:
+                                <ul>
+                                    <li>Scanner brand and model</li>
+                                    <li>Confidence level (Very High, High, Moderate, Low)</li>
+                                    <li>Forensic details and indicators</li>
+                                    <li>Advanced visualizations</li>
+                                </ul>
+                            </li>
+                            <li>Generate PDF report or export JSON data</li>
+                        </ol>
+                        <p><strong>Tip:</strong> Higher quality images (300+ DPI) yield better results.</p>
                     </div>
-                    <div class="method-item">
-                        <h3>3. Frequency Domain Analysis</h3>
-                        <p>FFT-based analysis detects scanner-specific periodic artifacts</p>
+
+                    <div class="instruction-step">
+                        <h3>
+                            <span class="step-number">2</span>
+                            Image Comparison
+                        </h3>
+                        <p><strong>Purpose:</strong> Determine if two images were scanned by the same device.</p>
+                        <p><strong>Steps:</strong></p>
+                        <ol>
+                            <li>Go to the <strong>Image Comparison</strong> tab</li>
+                            <li>Upload the first image</li>
+                            <li>Upload the second image</li>
+                            <li>Click "Compare Images"</li>
+                            <li>Review similarity metrics:
+                                <ul>
+                                    <li>Overall similarity percentage</li>
+                                    <li>PRNU (Photo Response Non-Uniformity) match</li>
+                                    <li>Texture similarity</li>
+                                    <li>Frequency domain similarity</li>
+                                    <li>Wavelet analysis match</li>
+                                </ul>
+                            </li>
+                            <li>Interpret the match status (Same Scanner / Different Scanners / Likely Same / Unlikely)</li>
+                        </ol>
+                        <p><strong>Best Practice:</strong> Compare images of similar content for most accurate results.</p>
                     </div>
-                    <div class="method-item">
-                        <h3>4. Metadata Forensics</h3>
-                        <p>EXIF data extraction and analysis for additional verification</p>
+
+                    <div class="instruction-step">
+                        <h3>
+                            <span class="step-number">3</span>
+                            Batch Analysis
+                        </h3>
+                        <p><strong>Purpose:</strong> Analyze multiple documents simultaneously and group by scanner.</p>
+                        <p><strong>Steps:</strong></p>
+                        <ol>
+                            <li>Switch to the <strong>Batch Analysis</strong> tab</li>
+                            <li>Drag and drop 2-20 files or click to browse</li>
+                            <li>Files will be listed with preview icons</li>
+                            <li>Click "Analyze Batch" to process all files</li>
+                            <li>View results organized by scanner groups</li>
+                            <li>See which files were scanned by the same device</li>
+                            <li>Download batch report with all findings</li>
+                        </ol>
+                        <p><strong>Use Case:</strong> Ideal for processing document sets in investigations or audits.</p>
                     </div>
-                    <div class="method-item">
-                        <h3>5. Machine Learning</h3>
-                        <p>AI-powered classification for accurate scanner identification</p>
+
+                    <div class="instruction-step">
+                        <h3>
+                            <span class="step-number">4</span>
+                            Tampering Detection
+                        </h3>
+                        <p><strong>Purpose:</strong> Detect if a scanned document has been digitally manipulated.</p>
+                        <p><strong>Steps:</strong></p>
+                        <ol>
+                            <li>Open the <strong>Tampering Detection</strong> tab</li>
+                            <li>Upload the suspect document</li>
+                            <li>Click "Detect Tampering"</li>
+                            <li>System performs multiple forensic tests:
+                                <ul>
+                                    <li>Error Level Analysis (ELA)</li>
+                                    <li>Noise consistency checking</li>
+                                    <li>JPEG artifact analysis</li>
+                                    <li>Metadata verification</li>
+                                </ul>
+                            </li>
+                            <li>Review tampering verdict and risk level</li>
+                            <li>Examine suspicious indicators if detected</li>
+                            <li>Study technical analysis for each method</li>
+                        </ol>
+                        <p><strong>Note:</strong> Multiple re-saves or compression can trigger false positives.</p>
+                    </div>
+
+                    <div class="instruction-step">
+                        <h3>
+                            <span class="step-number">5</span>
+                            History Management & Advanced Features
+                        </h3>
+                        <p><strong>Purpose:</strong> Track, search, and manage all previous analyses with powerful filtering capabilities.</p>
+                        <p><strong>Features:</strong></p>
+                        <ul>
+                            <li><strong>View History:</strong> Click "History" in navigation to see all past analyses with statistics dashboard</li>
+                            <li><strong>Search & Filter:</strong> 
+                                <ul>
+                                    <li>Real-time search by scanner brand, model, or filename</li>
+                                    <li>Filter by analysis type (Scanner/Comparison/Tampering)</li>
+                                    <li>Filter by confidence level (High/Medium/Low)</li>
+                                    <li>Filter by date range (Today/Week/Month/All Time)</li>
+                                    <li>Limit results display (10/25/50/100/All)</li>
+                                </ul>
+                            </li>
+                            <li><strong>Add Notes:</strong> Click edit button next to any record to add investigation notes and comments</li>
+                            <li><strong>Share Reports:</strong> Multiple sharing options including:
+                                <ul>
+                                    <li>Email reports with pre-filled details</li>
+                                    <li>Copy shareable link to clipboard</li>
+                                    <li>Copy formatted text summary</li>
+                                    <li>Download professional PDF reports</li>
+                                </ul>
+                            </li>
+                            <li><strong>Statistics Dashboard:</strong> View total analyses, comparisons, tampering checks, and detection rates</li>
+                            <li><strong>Local Timestamps:</strong> All records show accurate local time with AM/PM format</li>
+                            <li><strong>Download Reports:</strong> Generate detailed PDF reports for past analyses</li>
+                            <li><strong>Delete Records:</strong> Remove individual entries using trash icon</li>
+                            <li><strong>Clear All:</strong> Wipe entire history with double confirmation</li>
+                        </ul>
+                    </div>
+
+                    <div class="instruction-step">
+                        <h3>
+                            <span class="step-number">6</span>
+                            Understanding Confidence Levels
+                        </h3>
+                        <p><strong>TraceFinder uses a 5-tier confidence system:</strong></p>
+                        <div class="confidence-scale">
+                            <div class="confidence-item">
+                                <span class="confidence-badge-demo badge-very-high">Very High (90-100%)</span>
+                                <span>Strong forensic match with clear scanner signature. High reliability.</span>
+                            </div>
+                            <div class="confidence-item">
+                                <span class="confidence-badge-demo badge-high">High (75-89%)</span>
+                                <span>Good match with multiple consistent indicators. Reliable identification.</span>
+                            </div>
+                            <div class="confidence-item">
+                                <span class="confidence-badge-demo badge-moderate">Moderate (50-74%)</span>
+                                <span>Probable match but with some ambiguity. Additional verification recommended.</span>
+                            </div>
+                            <div class="confidence-item">
+                                <span class="confidence-badge-demo badge-low">Low (&lt;50%)</span>
+                                <span>Weak match or insufficient data. Results should be treated with caution.</span>
+                            </div>
+                        </div>
+                        <p style="margin-top: 1rem;"><strong>Factors Affecting Confidence:</strong></p>
+                        <ul>
+                            <li>Image quality and resolution (higher is better)</li>
+                            <li>File format (TIFF &gt; PNG &gt; JPG)</li>
+                            <li>Presence of EXIF metadata</li>
+                            <li>Scanner model in database</li>
+                            <li>Image content uniformity</li>
+                            <li>Post-processing applied to scan</li>
+                        </ul>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="about-card">
-                <h2><i class="fas fa-bullseye"></i> Use Cases</h2>
-                <ul class="use-cases">
-                    <li><i class="fas fa-check"></i> Digital forensic investigations</li>
-                    <li><i class="fas fa-check"></i> Document authenticity verification</li>
-                    <li><i class="fas fa-check"></i> Copyright and IP protection</li>
-                    <li><i class="fas fa-check"></i> Law enforcement investigations</li>
-                    <li><i class="fas fa-check"></i> Academic research in digital forensics</li>
-                    <li><i class="fas fa-check"></i> Security auditing</li>
-                </ul>
-            </div>
+        <!-- Features Tab -->
+        <div id="features" class="help-content">
+            <div class="about-section">
+                <div class="about-card">
+                    <h2><i class="fas fa-star"></i> Core Features</h2>
+                    
+                    <div class="feature-grid">
+                        <div class="feature-box">
+                            <i class="fas fa-search"></i>
+                            <h3>Scanner Identification</h3>
+                            <ul style="text-align: left; font-size: 0.9rem;">
+                                <li>ML-based scanner detection</li>
+                                <li>EXIF metadata extraction</li>
+                                <li>Confidence scoring system</li>
+                                <li>Multiple scanner database</li>
+                                <li>Real-time analysis</li>
+                            </ul>
+                        </div>
 
-            <div class="about-card">
-                <h2><i class="fas fa-graduation-cap"></i> Technology Stack</h2>
-                <div class="tech-stack">
-                    <div class="tech-category">
-                        <h4>Backend</h4>
-                        <p>Python, Flask, NumPy, OpenCV, scikit-learn, TensorFlow</p>
+                        <div class="feature-box">
+                            <i class="fas fa-fingerprint"></i>
+                            <h3>Forensic Analysis</h3>
+                            <ul style="text-align: left; font-size: 0.9rem;">
+                                <li>PRNU pattern extraction</li>
+                                <li>Texture analysis (GLCM)</li>
+                                <li>Frequency domain analysis</li>
+                                <li>Wavelet transformation</li>
+                                <li>Noise pattern detection</li>
+                            </ul>
+                        </div>
+
+                        <div class="feature-box">
+                            <i class="fas fa-equals"></i>
+                            <h3>Image Comparison</h3>
+                            <ul style="text-align: left; font-size: 0.9rem;">
+                                <li>Multi-metric similarity</li>
+                                <li>PRNU correlation</li>
+                                <li>Texture matching</li>
+                                <li>Frequency comparison</li>
+                                <li>Match probability scoring</li>
+                            </ul>
+                        </div>
+
+                        <div class="feature-box">
+                            <i class="fas fa-layer-group"></i>
+                            <h3>Batch Processing</h3>
+                            <ul style="text-align: left; font-size: 0.9rem;">
+                                <li>Process 2-20 files</li>
+                                <li>Automatic grouping</li>
+                                <li>Drag & drop interface</li>
+                                <li>Progress tracking</li>
+                                <li>Bulk report generation</li>
+                            </ul>
+                        </div>
+
+                        <div class="feature-box">
+                            <i class="fas fa-shield-alt"></i>
+                            <h3>Tampering Detection</h3>
+                            <ul style="text-align: left; font-size: 0.9rem;">
+                                <li>Error level analysis</li>
+                                <li>Noise consistency check</li>
+                                <li>JPEG artifact detection</li>
+                                <li>Metadata verification</li>
+                                <li>Risk level assessment</li>
+                            </ul>
+                        </div>
+
+                        <div class="feature-box">
+                            <i class="fas fa-chart-area"></i>
+                            <h3>Visualizations</h3>
+                            <ul style="text-align: left; font-size: 0.9rem;">
+                                <li>Noise heatmaps</li>
+                                <li>Frequency charts</li>
+                                <li>Interactive graphs</li>
+                                <li>Confidence indicators</li>
+                                <li>Result summaries</li>
+                            </ul>
+                        </div>
+
+                        <div class="feature-box">
+                            <i class="fas fa-file-pdf"></i>
+                            <h3>PDF Reports</h3>
+                            <ul style="text-align: left; font-size: 0.9rem;">
+                                <li>Professional formatting</li>
+                                <li>Forensic details included</li>
+                                <li>Executive summary</li>
+                                <li>Technical analysis</li>
+                                <li>Instant download</li>
+                            </ul>
+                        </div>
+
+                        <div class="feature-box">
+                            <i class="fas fa-history"></i>
+                            <h3>History Management</h3>
+                            <ul style="text-align: left; font-size: 0.9rem;">
+                                <li>SQLite database storage</li>
+                                <li>Real-time search functionality</li>
+                                <li>Multi-criteria filtering</li>
+                                <li>Add investigation notes</li>
+                                <li>Statistics dashboard</li>
+                                <li>Local timestamps (AM/PM)</li>
+                                <li>Individual record deletion</li>
+                                <li>Bulk clear all option</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="feature-box">
+                            <i class="fas fa-share-alt"></i>
+                            <h3>Share & Collaborate</h3>
+                            <ul style="text-align: left; font-size: 0.9rem;">
+                                <li>Email reports directly</li>
+                                <li>Copy shareable links</li>
+                                <li>Copy formatted text</li>
+                                <li>Download PDF reports</li>
+                                <li>Pre-filled templates</li>
+                                <li>One-click sharing</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="feature-box">
+                            <i class="fas fa-filter"></i>
+                            <h3>Advanced Filtering</h3>
+                            <ul style="text-align: left; font-size: 0.9rem;">
+                                <li>Search by brand/model</li>
+                                <li>Filter by analysis type</li>
+                                <li>Confidence level filters</li>
+                                <li>Date range selection</li>
+                                <li>Custom result limits</li>
+                                <li>Real-time results update</li>
+                            </ul>
+                        </div>
+
+                        <div class="feature-box">
+                            <i class="fas fa-download"></i>
+                            <h3>Export Options</h3>
+                            <ul style="text-align: left; font-size: 0.9rem;">
+                                <li>PDF reports</li>
+                                <li>JSON data export</li>
+                                <li>Batch reports</li>
+                                <li>Historical reports</li>
+                                <li>Raw analysis data</li>
+                            </ul>
+                        </div>
                     </div>
-                    <div class="tech-category">
-                        <h4>Image Processing</h4>
-                        <p>Pillow, scikit-image, SciPy, PyWavelets</p>
-                    </div>
-                    <div class="tech-category">
-                        <h4>Frontend</h4>
-                        <p>HTML5, CSS3, JavaScript (ES6+)</p>
-                    </div>
-                    <div class="tech-category">
-                        <h4>Reporting</h4>
-                        <p>ReportLab, Pandas, Matplotlib</p>
+                </div>
+
+                <div class="about-card">
+                    <h2><i class="fas fa-cogs"></i> Technical Capabilities</h2>
+                    <div class="methodology">
+                        <div class="method-item">
+                            <h3>PRNU Analysis</h3>
+                            <p>Photo Response Non-Uniformity (PRNU) pattern extraction identifies unique sensor 
+                            characteristics caused by manufacturing imperfections. Each scanner's sensor has a 
+                            distinctive "fingerprint" that can be extracted and matched.</p>
+                        </div>
+                        <div class="method-item">
+                            <h3>Texture Analysis</h3>
+                            <p>Gray Level Co-occurrence Matrix (GLCM) analysis examines spatial relationships 
+                            between pixels to identify texture patterns specific to scanner models and their 
+                            optical characteristics.</p>
+                        </div>
+                        <div class="method-item">
+                            <h3>Frequency Domain Analysis</h3>
+                            <p>Fast Fourier Transform (FFT) based analysis detects periodic artifacts introduced 
+                            by scanner components like CCD sensors, motors, and optical systems. These artifacts 
+                            form unique patterns in the frequency domain.</p>
+                        </div>
+                        <div class="method-item">
+                            <h3>Wavelet Transform</h3>
+                            <p>Multi-resolution wavelet decomposition captures scanner-specific characteristics 
+                            across different frequency bands, revealing subtle patterns invisible to spatial analysis.</p>
+                        </div>
+                        <div class="method-item">
+                            <h3>Metadata Forensics</h3>
+                            <p>Comprehensive EXIF data extraction and analysis provides scanner identification 
+                            from embedded metadata, including make, model, software, and scanning parameters.</p>
+                        </div>
+                        <div class="method-item">
+                            <h3>Machine Learning</h3>
+                            <p>Trained classification models using Random Forest and SVM algorithms achieve 
+                            high accuracy in scanner identification by learning complex feature patterns from 
+                            extensive training datasets.</p>
+                        </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="about-card">
-                <h2><i class="fas fa-user"></i> About the Developer</h2>
-                <p>
-                    <strong>Rahul Mahato</strong> - Developer and researcher specializing in digital forensics 
-                    and machine learning. TraceFinder represents advanced research in scanner identification 
-                    and forensic analysis techniques.
-                </p>
+        <!-- FAQ Tab -->
+        <div id="faq" class="help-content">
+            <div class="about-section">
+                <div class="about-card">
+                    <h2><i class="fas fa-question-circle"></i> Frequently Asked Questions</h2>
+                    
+                    <div class="faq-item" onclick="toggleFAQ(this)">
+                        <div class="faq-question">
+                            <span>What image formats are supported?</span>
+                            <i class="fas fa-chevron-down faq-icon"></i>
+                        </div>
+                        <div class="faq-answer">
+                            TraceFinder supports PNG, JPG, JPEG, TIFF, and PDF files. For best results, use uncompressed 
+                            formats like TIFF or high-quality PNG. JPEG compression can affect analysis accuracy, especially 
+                            for tampering detection.
+                        </div>
+                    </div>
+
+                    <div class="faq-item" onclick="toggleFAQ(this)">
+                        <div class="faq-question">
+                            <span>What image size/resolution is recommended?</span>
+                            <i class="fas fa-chevron-down faq-icon"></i>
+                        </div>
+                        <div class="faq-answer">
+                            Minimum 800x800 pixels is recommended, but higher resolution images (300+ DPI) yield 
+                            significantly better results. The system can handle images up to 100MB in size. Very small 
+                            images may not contain enough forensic information for accurate analysis.
+                        </div>
+                    </div>
+
+                    <div class="faq-item" onclick="toggleFAQ(this)">
+                        <div class="faq-question">
+                            <span>How accurate is scanner identification?</span>
+                            <i class="fas fa-chevron-down faq-icon"></i>
+                        </div>
+                        <div class="faq-answer">
+                            Accuracy varies based on image quality, scanner model, and database coverage. For high-quality 
+                            scans with metadata, accuracy can exceed 95%. Results with "Very High" or "High" confidence 
+                            are generally reliable, while "Moderate" or "Low" confidence results should be corroborated 
+                            with additional evidence.
+                        </div>
+                    </div>
+
+                    <div class="faq-item" onclick="toggleFAQ(this)">
+                        <div class="faq-question">
+                            <span>Can TraceFinder identify all scanner brands?</span>
+                            <i class="fas fa-chevron-down faq-icon"></i>
+                        </div>
+                        <div class="faq-answer">
+                            TraceFinder is trained on major scanner brands including HP, Canon, Epson, Brother, Fujitsu, 
+                            and others. However, very new models or uncommon brands may not be in the database. The system 
+                            will indicate "Unknown" or provide a best-match estimate for unrecognized scanners.
+                        </div>
+                    </div>
+
+                    <div class="faq-item" onclick="toggleFAQ(this)">
+                        <div class="faq-question">
+                            <span>Does TraceFinder store my uploaded images?</span>
+                            <i class="fas fa-chevron-down faq-icon"></i>
+                        </div>
+                        <div class="faq-answer">
+                            Images are temporarily stored during analysis and automatically deleted after processing. 
+                            Analysis results (scanner identification, confidence scores, etc.) are saved in the history 
+                            database, but not the actual images. You can delete history records at any time.
+                        </div>
+                    </div>
+
+                    <div class="faq-item" onclick="toggleFAQ(this)">
+                        <div class="faq-question">
+                            <span>What is the difference between Scanner Detection and Image Comparison?</span>
+                            <i class="fas fa-chevron-down faq-icon"></i>
+                        </div>
+                        <div class="faq-answer">
+                            <strong>Scanner Detection</strong> identifies the specific scanner model used to create a single image. 
+                            <strong>Image Comparison</strong> analyzes two images to determine if they were scanned by the same 
+                            device, without necessarily identifying the exact model. Use comparison when you need to establish 
+                            a connection between documents.
+                        </div>
+                    </div>
+
+                    <div class="faq-item" onclick="toggleFAQ(this)">
+                        <div class="faq-question">
+                            <span>Can TraceFinder detect all types of document tampering?</span>
+                            <i class="fas fa-chevron-down faq-icon"></i>
+                        </div>
+                        <div class="faq-answer">
+                            TraceFinder detects many common tampering techniques including copy-paste modifications, cloning, 
+                            splicing, and inconsistent compression. However, sophisticated tampering using advanced tools may 
+                            evade detection. The system is best used as part of a comprehensive forensic investigation, not 
+                            as the sole tampering verification method.
+                        </div>
+                    </div>
+
+                    <div class="faq-item" onclick="toggleFAQ(this)">
+                        <div class="faq-question">
+                            <span>Why did I get a "Low" confidence result?</span>
+                            <i class="fas fa-chevron-down faq-icon"></i>
+                        </div>
+                        <div class="faq-answer">
+                            Low confidence can result from: (1) Poor image quality or low resolution, (2) Heavy JPEG compression, 
+                            (3) Scanner model not in database, (4) Significant post-processing applied to scan, (5) Image content 
+                            that lacks distinguishing features, or (6) Corrupted or incomplete file. Try using a higher quality 
+                            scan if possible.
+                        </div>
+                    </div>
+
+                    <div class="faq-item" onclick="toggleFAQ(this)">
+                        <div class="faq-question">
+                            <span>Can I use TraceFinder results as legal evidence?</span>
+                            <i class="fas fa-chevron-down faq-icon"></i>
+                        </div>
+                        <div class="faq-answer">
+                            TraceFinder provides forensic analysis that can support investigations, but results should be 
+                            reviewed by qualified forensic experts before use in legal proceedings. The admissibility of 
+                            digital forensic evidence varies by jurisdiction. Always consult with legal professionals and 
+                            certified forensic examiners for courtroom applications.
+                        </div>
+                    </div>
+
+                    <div class="faq-item" onclick="toggleFAQ(this)">
+                        <div class="faq-question">
+                            <span>How do I improve analysis accuracy?</span>
+                            <i class="fas fa-chevron-down faq-icon"></i>
+                        </div>
+                        <div class="faq-answer">
+                            Best practices: (1) Use uncompressed or lossless formats (TIFF, PNG), (2) Maintain original scan 
+                            resolution (don't downscale), (3) Avoid image editing or filters, (4) Keep EXIF metadata intact, 
+                            (5) Use scans of documents with varied content, (6) Ensure good scan quality (no streaks, stains, 
+                            or hardware defects), (7) For batch analysis, use multiple samples from the same scanner.
+                        </div>
+                    </div>
+
+                    <div class="faq-item" onclick="toggleFAQ(this)">
+                        <div class="faq-question">
+                            <span>What should I do if analysis fails?</span>
+                            <i class="fas fa-chevron-down faq-icon"></i>
+                        </div>
+                        <div class="faq-answer">
+                            Common solutions: (1) Verify file format is supported, (2) Check file size is under 100MB, 
+                            (3) Ensure file is not corrupted, (4) Try a different file format, (5) For PDFs, ensure they 
+                            contain actual scanned images not just text, (6) Clear browser cache and retry, (7) Check console 
+                            for specific error messages. If problems persist, the image may lack sufficient forensic information.
+                        </div>
+                    </div>
+                </div>
             </div>
+        </div>
 
-            <div class="about-card disclaimer">
-                <h2><i class="fas fa-exclamation-triangle"></i> Important Notice</h2>
-                <p>
-                    <strong>Legal & Ethical Use:</strong> This tool is designed for legitimate forensic, 
-                    educational, and research purposes only. Users must ensure they have proper authorization 
-                    before analyzing any documents. The developers assume no liability for misuse of this tool.
-                </p>
-                <p>
-                    <strong>Accuracy:</strong> While TraceFinder uses advanced algorithms, results depend on 
-                    image quality, scanner database completeness, and other factors. Always use results as 
-                    part of a comprehensive investigation, not as sole evidence.
-                </p>
+        <!-- Technical Tab -->
+        <div id="technical" class="help-content">
+            <div class="about-section">
+                <div class="about-card">
+                    <h2><i class="fas fa-code"></i> Technology Stack</h2>
+                    <div class="tech-stack">
+                        <div class="tech-category">
+                            <h4><i class="fas fa-server"></i> Backend Framework</h4>
+                            <p><strong>Python 3.13</strong> - Core programming language</p>
+                            <p><strong>Flask 3.0</strong> - Web application framework</p>
+                            <p><strong>Werkzeug</strong> - WSGI utility library</p>
+                        </div>
+                        <div class="tech-category">
+                            <h4><i class="fas fa-brain"></i> Machine Learning</h4>
+                            <p><strong>scikit-learn 1.3.2</strong> - ML algorithms (Random Forest, SVM)</p>
+                            <p><strong>NumPy 1.26.4</strong> - Numerical computing</p>
+                            <p><strong>SciPy 1.11.4</strong> - Scientific computing</p>
+                            <p><strong>Pickle</strong> - Model serialization</p>
+                        </div>
+                        <div class="tech-category">
+                            <h4><i class="fas fa-image"></i> Image Processing</h4>
+                            <p><strong>OpenCV 4.10.0</strong> - Computer vision</p>
+                            <p><strong>Pillow 10.1.0</strong> - Image manipulation</p>
+                            <p><strong>scikit-image</strong> - Image processing algorithms</p>
+                            <p><strong>PyWavelets</strong> - Wavelet transforms</p>
+                        </div>
+                        <div class="tech-category">
+                            <h4><i class="fas fa-file-alt"></i> Metadata & Reports</h4>
+                            <p><strong>exifread 3.0.0</strong> - EXIF extraction</p>
+                            <p><strong>ReportLab 4.0.7</strong> - PDF generation</p>
+                            <p><strong>Pandas</strong> - Data analysis</p>
+                            <p><strong>Matplotlib</strong> - Visualization</p>
+                        </div>
+                        <div class="tech-category">
+                            <h4><i class="fas fa-database"></i> Data Storage</h4>
+                            <p><strong>SQLite 3</strong> - Relational database</p>
+                            <p><strong>JSON</strong> - Data serialization</p>
+                            <p><strong>Pickle</strong> - Object persistence</p>
+                        </div>
+                        <div class="tech-category">
+                            <h4><i class="fas fa-window-maximize"></i> Frontend</h4>
+                            <p><strong>HTML5 & CSS3</strong> - Modern web standards</p>
+                            <p><strong>JavaScript ES6+</strong> - Interactive UI</p>
+                            <p><strong>Chart.js 4.4.0</strong> - Data visualization</p>
+                            <p><strong>Font Awesome 6.4</strong> - Icon library</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="about-card">
+                    <h2><i class="fas fa-project-diagram"></i> System Architecture</h2>
+                    <p><strong>Modular Design:</strong></p>
+                    <ul>
+                        <li><strong>scanner_detector.py</strong> - Core scanner identification engine</li>
+                        <li><strong>feature_extractor.py</strong> - Forensic feature extraction</li>
+                        <li><strong>image_processor.py</strong> - Image preprocessing and handling</li>
+                        <li><strong>image_comparator.py</strong> - Multi-metric image comparison</li>
+                        <li><strong>tampering_detector.py</strong> - Forgery detection algorithms</li>
+                        <li><strong>noise_analyzer.py</strong> - PRNU and noise pattern analysis</li>
+                        <li><strong>model_trainer.py</strong> - ML model training pipeline</li>
+                        <li><strong>pdf_report.py</strong> - Professional report generation</li>
+                        <li><strong>history.py</strong> - Analysis tracking and database</li>
+                        <li><strong>visualizer.py</strong> - Chart and graph generation</li>
+                    </ul>
+                </div>
+
+                <div class="about-card">
+                    <h2><i class="fas fa-graduation-cap"></i> Academic Foundation</h2>
+                    <p>TraceFinder is built on established research in digital forensics:</p>
+                    <ul>
+                        <li><strong>PRNU Analysis:</strong> Based on sensor noise fingerprinting research (Lukas et al., 2006)</li>
+                        <li><strong>Scanner Identification:</strong> Built on work by Khanna & Delp on scanner ballistics</li>
+                        <li><strong>Error Level Analysis:</strong> Inspired by Krawetz's ELA technique for tampering detection</li>
+                        <li><strong>Frequency Analysis:</strong> Utilizes FFT-based artifact detection methods</li>
+                        <li><strong>Machine Learning:</strong> Implements ensemble learning for robust classification</li>
+                    </ul>
+                </div>
+
+                <div class="about-card">
+                    <h2><i class="fas fa-user-tie"></i> About the Developer</h2>
+                    <p>
+                        <strong>Rahul Mahato</strong> is a software developer and researcher specializing in digital forensics, 
+                        computer vision, and machine learning. With a focus on document forensics and scanner identification, 
+                        Rahul developed TraceFinder to bridge the gap between academic research and practical forensic tools.
+                    </p>
+                    <p>
+                        TraceFinder represents the culmination of extensive research in forensic science, combining multiple 
+                        state-of-the-art techniques into a unified, user-friendly platform for forensic investigators, 
+                        researchers, and security professionals.
+                    </p>
+                    <p style="margin-top: 1.5rem;">
+                        <strong>Contact:</strong> For inquiries, collaborations, or support, please reach out through the 
+                        project repository or official channels.
+                    </p>
+                </div>
+
+                <div class="about-card">
+                    <h2><i class="fas fa-code-branch"></i> Version Information</h2>
+                    <p><strong>TraceFinder Version:</strong> 1.0.0</p>
+                    <p><strong>Release Date:</strong> January 2026</p>
+                    <p><strong>License:</strong> Educational and Research Use</p>
+                    <p><strong>Platform:</strong> Cross-platform (Windows, macOS, Linux)</p>
+                    <p><strong>Python Version:</strong> 3.13+</p>
+                </div>
             </div>
         </div>
     </div>
 
     <footer class="footer">
         <div class="container">
-            <p>&copy; 2026 TraceFinder - Forensic Scanner Identification System</p>
-            <p>Developed by Rahul Mahato | For educational and forensic purposes only</p>
+            <p>&copy; 2026 TraceFinder - Advanced Forensic Scanner Identification System</p>
+            <p>Developed by Rahul Mahato | For Educational, Research, and Forensic Purposes</p>
+            <p style="font-size: 0.85rem; opacity: 0.8; margin-top: 0.5rem;">
+                <i class="fas fa-shield-alt"></i> Unauthorized use prohibited | 
+                <i class="fas fa-gavel"></i> Legal authorization required | 
+                <i class="fas fa-user-shield"></i> No liability for misuse
+            </p>
         </div>
     </footer>
 
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        function showHelpTab(tabName) {
+            // Hide all content
+            document.querySelectorAll('.help-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.help-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected content
+            const targetContent = document.getElementById(tabName);
+            if (targetContent) {
+                targetContent.classList.add('active');
+            }
+            
+            // Add active class to clicked tab
+            const clickedTab = document.querySelector(`.help-tab[onclick*="${tabName}"]`);
+            if (clickedTab) {
+                clickedTab.classList.add('active');
+            }
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        function toggleFAQ(element) {
+            element.classList.toggle('active');
+        }
+    </script>
 </body>
 </html>

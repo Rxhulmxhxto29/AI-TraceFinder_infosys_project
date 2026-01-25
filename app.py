@@ -10,6 +10,7 @@ from modules.image_comparator import ImageComparator
 from modules.tampering_detector import TamperingDetector
 from modules.visualizer import FingerprintVisualizer
 from modules.history import AnalysisHistory
+from modules.pdf_report import PDFReportGenerator
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -23,6 +24,7 @@ image_comparator = ImageComparator()
 tampering_detector = TamperingDetector()
 visualizer = FingerprintVisualizer()
 history = AnalysisHistory()
+pdf_generator = PDFReportGenerator()
 
 def allowed_file(filename):
     """Check if file extension is allowed"""
@@ -38,6 +40,11 @@ def index():
 def about():
     """Render about page"""
     return render_template('about.html')
+
+@app.route('/history_page')
+def history_page():
+    """Render history page"""
+    return render_template('history.html')
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
@@ -129,18 +136,67 @@ def generate_report():
     try:
         data = request.get_json()
         
-        # Generate report
-        report_path = report_generator.create_pdf_report(data)
+        # Generate report using new PDF generator
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        output_path = f'reports/TraceFinder_Report_{timestamp}.pdf'
         
-        return send_file(
-            report_path,
-            mimetype='application/pdf',
-            as_attachment=True,
-            download_name='tracefinder_report.pdf'
-        )
+        result = pdf_generator.generate_report(data, output_path)
+        
+        if result['success']:
+            return send_file(
+                result['report_path'],
+                mimetype='application/pdf',
+                as_attachment=True,
+                download_name=f'TraceFinder_Report_{timestamp}.pdf'
+            )
+        else:
+            return jsonify({'error': result['error']}), 500
     
     except Exception as e:
         return jsonify({'error': f'Report generation failed: {str(e)}'}), 500
+
+@app.route('/download_pdf/<int:analysis_id>', methods=['GET'])
+def download_pdf(analysis_id):
+    """Download PDF report for a specific analysis from history"""
+    try:
+        # Get analysis from history
+        conn = history._get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            SELECT filename, results_json FROM scanner_analysis WHERE id = ?
+        ''', (analysis_id,))
+        
+        row = cursor.fetchone()
+        conn.close()
+        
+        if not row:
+            return jsonify({'error': 'Analysis not found'}), 404
+        
+        # Parse results
+        import json
+        results = json.loads(row[1])
+        results['filename'] = row[0]
+        results['case_id'] = f'CASE-{analysis_id}'
+        
+        # Generate PDF
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        output_path = f'reports/TraceFinder_Report_{analysis_id}_{timestamp}.pdf'
+        
+        result = pdf_generator.generate_report(results, output_path)
+        
+        if result['success']:
+            return send_file(
+                result['report_path'],
+                mimetype='application/pdf',
+                as_attachment=True,
+                download_name=f'TraceFinder_Report_{analysis_id}.pdf'
+            )
+        else:
+            return jsonify({'error': result['error']}), 500
+    
+    except Exception as e:
+        return jsonify({'error': f'PDF generation failed: {str(e)}'}), 500
 
 @app.route('/compare', methods=['POST'])
 def compare_images():
@@ -301,7 +357,13 @@ def get_history():
     """Get analysis history"""
     try:
         history_type = request.args.get('type', 'all')
-        limit = int(request.args.get('limit', 10))
+        limit_param = request.args.get('limit', '10')
+        
+        # Handle 'all' or convert to int
+        if limit_param == 'all':
+            limit = 9999  # Large number to get all records
+        else:
+            limit = int(limit_param)
         
         data = {}
         
@@ -322,6 +384,91 @@ def get_history():
             'data': data
         })
         
+    except Exception as e:
+        print(f"Error in get_history: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/history/delete/<int:record_id>', methods=['DELETE'])
+def delete_history_record(record_id):
+    """Delete a specific history record"""
+    try:
+        analysis_type = request.args.get('type', 'scanner')
+        success = history.delete_analysis(record_id, analysis_type)
+        
+        if success:
+            return jsonify({
+                'success': True,
+                'message': 'Record deleted successfully'
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': 'Record not found'
+            }), 404
+            
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/history/clear', methods=['DELETE'])
+def clear_history():
+    """Clear all history records"""
+    try:
+        analysis_type = request.args.get('type', None)
+        success = history.clear_all_history(analysis_type)
+        
+        if success:
+            return jsonify({
+                'success': True,
+                'message': 'History cleared successfully'
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': 'Failed to clear history'
+            }), 500
+            
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@app.route('/history/notes/<int:analysis_id>', methods=['PUT', 'GET'])
+def manage_notes(analysis_id):
+    """Get or update notes for an analysis"""
+    try:
+        analysis_type = request.args.get('type', 'scanner')
+        
+        if request.method == 'GET':
+            notes = history.get_notes(analysis_id, analysis_type)
+            return jsonify({
+                'success': True,
+                'notes': notes or ''
+            })
+        
+        elif request.method == 'PUT':
+            data = request.get_json()
+            notes = data.get('notes', '')
+            
+            success = history.update_notes(analysis_id, analysis_type, notes)
+            
+            if success:
+                return jsonify({
+                    'success': True,
+                    'message': 'Notes updated successfully'
+                })
+            else:
+                return jsonify({
+                    'success': False,
+                    'error': 'Failed to update notes'
+                }), 500
+                
     except Exception as e:
         return jsonify({
             'success': False,
@@ -347,31 +494,29 @@ def batch_upload():
             }), 400
         
         results = []
+        temp_files = []
         
+        # Analyze all files
         for file in files:
             if file and allowed_file(file.filename):
                 try:
                     filename = secure_filename(file.filename)
-                    filepath = os.path.join(app.config['UPLOAD_FOLDER'], 'batch_' + filename)
+                    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S_%f')
+                    filepath = os.path.join(app.config['UPLOAD_FOLDER'], f'batch_{timestamp}_{filename}')
                     file.save(filepath)
+                    temp_files.append(filepath)
                     
                     # Analyze
                     analysis_result = scanner_detector.analyze(filepath)
                     
                     # Save to history
-                    history.add_scanner_analysis(filename, 0, analysis_result)
+                    history.add_scanner_analysis(filename, file.content_length or 0, analysis_result)
                     
                     results.append({
                         'filename': filename,
                         'success': True,
                         'result': analysis_result
                     })
-                    
-                    # Clean up
-                    try:
-                        os.remove(filepath)
-                    except:
-                        pass
                         
                 except Exception as e:
                     results.append({
@@ -380,11 +525,33 @@ def batch_upload():
                         'error': str(e)
                     })
         
+        # Group results by scanner
+        scanner_groups = {}
+        for result in results:
+            if result['success']:
+                scanner_key = f"{result['result'].get('scanner_brand', 'Unknown')} {result['result'].get('scanner_model', 'Unknown')}"
+                if scanner_key not in scanner_groups:
+                    scanner_groups[scanner_key] = []
+                scanner_groups[scanner_key].append(result['filename'])
+        
+        # Clean up temp files
+        for filepath in temp_files:
+            try:
+                if os.path.exists(filepath):
+                    os.remove(filepath)
+            except:
+                pass
+        
         return jsonify({
             'success': True,
             'total': len(files),
             'processed': len(results),
-            'results': results
+            'results': results,
+            'scanner_groups': scanner_groups,
+            'summary': {
+                'unique_scanners': len(scanner_groups),
+                'groups': [{'scanner': k, 'count': len(v), 'files': v} for k, v in scanner_groups.items()]
+            }
         })
         
     except Exception as e:

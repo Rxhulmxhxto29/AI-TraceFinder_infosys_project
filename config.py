@@ -9,7 +9,7 @@ class Config:
     
     # Upload settings
     UPLOAD_FOLDER = 'static/uploads'
-    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max file size
+    MAX_CONTENT_LENGTH = 100 * 1024 * 1024  # 100MB max total request size for batch uploads
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'tiff', 'tif', 'bmp', 'pdf'}
     
     # Model settings

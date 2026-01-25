@@ -245,15 +245,15 @@ class ScannerDetector:
             # Split brand and model
             if '-' in scanner_full:
                 parts = scanner_full.split('-', 1)
-                brand = parts[0].rstrip('0123456789')
-                model = scanner_full.replace(brand, '').strip()
+                brand = parts[0]
+                model = parts[1] if len(parts) > 1 else parts[0]
             elif ' ' in scanner_full:
                 parts = scanner_full.split(' ', 1)
                 brand = parts[0]
-                model = parts[1]
+                model = parts[1] if len(parts) > 1 else parts[0]
             else:
                 brand = scanner_full
-                model = scanner_full
+                model = ""
             
             # Get top predictions
             top_indices = np.argsort(probabilities)[-3:][::-1]

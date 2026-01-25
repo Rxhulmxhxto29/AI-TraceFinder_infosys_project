@@ -15,6 +15,10 @@ class AnalysisHistory:
         """Create data directory if it doesn't exist"""
         os.makedirs(os.path.dirname(self.db_path), exist_ok=True)
     
+    def _get_connection(self):
+        """Get database connection"""
+        return sqlite3.connect(self.db_path)
+    
     def _initialize_database(self):
         """Create database tables if they don't exist"""
         conn = sqlite3.connect(self.db_path)
@@ -29,7 +33,8 @@ class AnalysisHistory:
                 detected_brand TEXT,
                 detected_model TEXT,
                 confidence REAL,
-                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                notes TEXT DEFAULT '',
+                timestamp DATETIME DEFAULT (datetime('now', 'localtime')),
                 results_json TEXT
             )
         ''')
@@ -41,7 +46,8 @@ class AnalysisHistory:
                 file2_name TEXT NOT NULL,
                 similarity_score REAL,
                 match_status TEXT,
-                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                notes TEXT DEFAULT '',
+                timestamp DATETIME DEFAULT (datetime('now', 'localtime')),
                 results_json TEXT
             )
         ''')
@@ -53,10 +59,27 @@ class AnalysisHistory:
                 tampering_detected BOOLEAN,
                 confidence REAL,
                 risk_level TEXT,
-                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                notes TEXT DEFAULT '',
+                timestamp DATETIME DEFAULT (datetime('now', 'localtime')),
                 results_json TEXT
             )
         ''')
+        
+        # Add notes column to existing tables if it doesn't exist
+        try:
+            cursor.execute("ALTER TABLE scanner_analysis ADD COLUMN notes TEXT DEFAULT ''")
+        except sqlite3.OperationalError:
+            pass  # Column already exists
+        
+        try:
+            cursor.execute("ALTER TABLE comparisons ADD COLUMN notes TEXT DEFAULT ''")
+        except sqlite3.OperationalError:
+            pass
+        
+        try:
+            cursor.execute("ALTER TABLE tampering_checks ADD COLUMN notes TEXT DEFAULT ''")
+        except sqlite3.OperationalError:
+            pass
         
         conn.commit()
         conn.close()
@@ -76,8 +99,8 @@ class AnalysisHistory:
                 filename,
                 file_size,
                 'scanner_detection',
-                results.get('scanner', {}).get('brand', 'Unknown'),
-                results.get('scanner', {}).get('model', 'Unknown'),
+                results.get('scanner_brand', 'Unknown'),
+                results.get('scanner_model', 'Unknown'),
                 results.get('confidence', 0.0),
                 json.dumps(results)
             ))
@@ -154,25 +177,50 @@ class AnalysisHistory:
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
             
-            cursor.execute('''
-                SELECT id, filename, detected_brand, detected_model, 
-                       confidence, timestamp
-                FROM scanner_analysis
-                ORDER BY timestamp DESC
-                LIMIT ?
-            ''', (limit,))
-            
-            rows = cursor.fetchall()
-            conn.close()
-            
-            return [{
-                'id': row[0],
-                'filename': row[1],
-                'brand': row[2],
-                'model': row[3],
-                'confidence': row[4],
-                'timestamp': row[5]
-            } for row in rows]
+            # Try with notes column first
+            try:
+                cursor.execute('''
+                    SELECT id, filename, detected_brand, detected_model, 
+                           confidence, timestamp, notes
+                    FROM scanner_analysis
+                    ORDER BY timestamp DESC
+                    LIMIT ?
+                ''', (limit,))
+                
+                rows = cursor.fetchall()
+                conn.close()
+                
+                return [{
+                    'id': row[0],
+                    'filename': row[1],
+                    'scanner_brand': row[2],
+                    'scanner_model': row[3],
+                    'confidence': row[4],
+                    'timestamp': row[5],
+                    'notes': row[6] or ''
+                } for row in rows]
+            except sqlite3.OperationalError:
+                # Fallback without notes column
+                cursor.execute('''
+                    SELECT id, filename, detected_brand, detected_model, 
+                           confidence, timestamp
+                    FROM scanner_analysis
+                    ORDER BY timestamp DESC
+                    LIMIT ?
+                ''', (limit,))
+                
+                rows = cursor.fetchall()
+                conn.close()
+                
+                return [{
+                    'id': row[0],
+                    'filename': row[1],
+                    'scanner_brand': row[2],
+                    'scanner_model': row[3],
+                    'confidence': row[4],
+                    'timestamp': row[5],
+                    'notes': ''
+                } for row in rows]
             
         except Exception as e:
             print(f"Error fetching analyses: {e}")
@@ -184,25 +232,50 @@ class AnalysisHistory:
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
             
-            cursor.execute('''
-                SELECT id, file1_name, file2_name, similarity_score, 
-                       match_status, timestamp
-                FROM comparisons
-                ORDER BY timestamp DESC
-                LIMIT ?
-            ''', (limit,))
-            
-            rows = cursor.fetchall()
-            conn.close()
-            
-            return [{
-                'id': row[0],
-                'file1': row[1],
-                'file2': row[2],
-                'similarity': row[3],
-                'status': row[4],
-                'timestamp': row[5]
-            } for row in rows]
+            # Try with notes column first
+            try:
+                cursor.execute('''
+                    SELECT id, file1_name, file2_name, similarity_score, 
+                           match_status, timestamp, notes
+                    FROM comparisons
+                    ORDER BY timestamp DESC
+                    LIMIT ?
+                ''', (limit,))
+                
+                rows = cursor.fetchall()
+                conn.close()
+                
+                return [{
+                    'id': row[0],
+                    'filename1': row[1],
+                    'filename2': row[2],
+                    'similarity_score': row[3],
+                    'match_status': row[4],
+                    'timestamp': row[5],
+                    'notes': row[6] or ''
+                } for row in rows]
+            except sqlite3.OperationalError:
+                # Fallback without notes column
+                cursor.execute('''
+                    SELECT id, file1_name, file2_name, similarity_score, 
+                           match_status, timestamp
+                    FROM comparisons
+                    ORDER BY timestamp DESC
+                    LIMIT ?
+                ''', (limit,))
+                
+                rows = cursor.fetchall()
+                conn.close()
+                
+                return [{
+                    'id': row[0],
+                    'filename1': row[1],
+                    'filename2': row[2],
+                    'similarity_score': row[3],
+                    'match_status': row[4],
+                    'timestamp': row[5],
+                    'notes': ''
+                } for row in rows]
             
         except Exception as e:
             print(f"Error fetching comparisons: {e}")
@@ -214,25 +287,50 @@ class AnalysisHistory:
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
             
-            cursor.execute('''
-                SELECT id, filename, tampering_detected, confidence, 
-                       risk_level, timestamp
-                FROM tampering_checks
-                ORDER BY timestamp DESC
-                LIMIT ?
-            ''', (limit,))
-            
-            rows = cursor.fetchall()
-            conn.close()
-            
-            return [{
-                'id': row[0],
-                'filename': row[1],
-                'tampering_detected': bool(row[2]),
-                'confidence': row[3],
-                'risk_level': row[4],
-                'timestamp': row[5]
-            } for row in rows]
+            # Try with notes column first
+            try:
+                cursor.execute('''
+                    SELECT id, filename, tampering_detected, confidence, 
+                           risk_level, timestamp, notes
+                    FROM tampering_checks
+                    ORDER BY timestamp DESC
+                    LIMIT ?
+                ''', (limit,))
+                
+                rows = cursor.fetchall()
+                conn.close()
+                
+                return [{
+                    'id': row[0],
+                    'filename': row[1],
+                    'is_tampered': bool(row[2]),
+                    'confidence': row[3],
+                    'risk_level': row[4],
+                    'timestamp': row[5],
+                    'notes': row[6] or ''
+                } for row in rows]
+            except sqlite3.OperationalError:
+                # Fallback without notes column
+                cursor.execute('''
+                    SELECT id, filename, tampering_detected, confidence, 
+                           risk_level, timestamp
+                    FROM tampering_checks
+                    ORDER BY timestamp DESC
+                    LIMIT ?
+                ''', (limit,))
+                
+                rows = cursor.fetchall()
+                conn.close()
+                
+                return [{
+                    'id': row[0],
+                    'filename': row[1],
+                    'is_tampered': bool(row[2]),
+                    'confidence': row[3],
+                    'risk_level': row[4],
+                    'timestamp': row[5],
+                    'notes': ''
+                } for row in rows]
             
         except Exception as e:
             print(f"Error fetching tampering checks: {e}")
@@ -314,3 +412,101 @@ class AnalysisHistory:
         except Exception as e:
             print(f"Error searching: {e}")
             return []
+    
+    def delete_analysis(self, analysis_id, analysis_type='scanner'):
+        """Delete a specific analysis record"""
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            
+            if analysis_type == 'scanner':
+                cursor.execute('DELETE FROM scanner_analysis WHERE id = ?', (analysis_id,))
+            elif analysis_type == 'comparison':
+                cursor.execute('DELETE FROM comparisons WHERE id = ?', (analysis_id,))
+            elif analysis_type == 'tampering':
+                cursor.execute('DELETE FROM tampering_checks WHERE id = ?', (analysis_id,))
+            
+            conn.commit()
+            deleted = cursor.rowcount > 0
+            conn.close()
+            
+            return deleted
+            
+        except Exception as e:
+            print(f"Error deleting analysis: {e}")
+            return False
+    
+    def clear_all_history(self, analysis_type=None):
+        """Clear all history records of a specific type or all types"""
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            
+            if analysis_type == 'scanner':
+                cursor.execute('DELETE FROM scanner_analysis')
+            elif analysis_type == 'comparison':
+                cursor.execute('DELETE FROM comparisons')
+            elif analysis_type == 'tampering':
+                cursor.execute('DELETE FROM tampering_checks')
+            else:
+                # Clear all
+                cursor.execute('DELETE FROM scanner_analysis')
+                cursor.execute('DELETE FROM comparisons')
+                cursor.execute('DELETE FROM tampering_checks')
+            
+            conn.commit()
+            conn.close()
+            
+            return True
+            
+        except Exception as e:
+            print(f"Error clearing history: {e}")
+            return False    
+    def update_notes(self, analysis_id, analysis_type, notes):
+        """Update notes for a specific analysis"""
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            
+            if analysis_type == 'scanner':
+                cursor.execute('UPDATE scanner_analysis SET notes = ? WHERE id = ?', (notes, analysis_id))
+            elif analysis_type == 'comparison':
+                cursor.execute('UPDATE comparisons SET notes = ? WHERE id = ?', (notes, analysis_id))
+            elif analysis_type == 'tampering':
+                cursor.execute('UPDATE tampering_checks SET notes = ? WHERE id = ?', (notes, analysis_id))
+            else:
+                return False
+            
+            conn.commit()
+            updated = cursor.rowcount > 0
+            conn.close()
+            
+            return updated
+            
+        except Exception as e:
+            print(f"Error updating notes: {e}")
+            return False
+    
+    def get_notes(self, analysis_id, analysis_type):
+        """Get notes for a specific analysis"""
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            
+            if analysis_type == 'scanner':
+                cursor.execute('SELECT notes FROM scanner_analysis WHERE id = ?', (analysis_id,))
+            elif analysis_type == 'comparison':
+                cursor.execute('SELECT notes FROM comparisons WHERE id = ?', (analysis_id,))
+            elif analysis_type == 'tampering':
+                cursor.execute('SELECT notes FROM tampering_checks WHERE id = ?', (analysis_id,))
+            else:
+                return None
+            
+            result = cursor.fetchone()
+            conn.close()
+            
+            return result[0] if result else ''
+            
+        except Exception as e:
+            print(f"Error getting notes: {e}")
+            return None

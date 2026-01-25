@@ -17,6 +17,7 @@
             </div>
             <ul class="nav-menu">
                 <li><a href="/" class="active">Home</a></li>
+                <li><a href="/history_page">History</a></li>
                 <li><a href="/about">About</a></li>
                 <li><a href="#" onclick="showHelp()">Help</a></li>
             </ul>
@@ -39,6 +40,9 @@
             <button class="tab-btn" onclick="showTab('compare')">
                 <i class="fas fa-equals"></i> Image Comparison
             </button>
+            <button class="tab-btn" onclick="showTab('batch')">
+                <i class="fas fa-layer-group"></i> Batch Analysis
+            </button>
             <button class="tab-btn" onclick="showTab('tampering')">
                 <i class="fas fa-shield-alt"></i> Tampering Detection
             </button>
@@ -52,16 +56,17 @@
                         <i class="fas fa-cloud-upload-alt"></i>
                     </div>
                     <h2>Upload Document for Analysis</h2>
-                    <p>Select a scanned document to identify the scanner device</p>
+                    <p>Select a file to analyze</p>
                     
                     <form id="uploadForm" enctype="multipart/form-data">
                         <div class="file-input-wrapper">
-                            <input type="file" id="fileInput" name="file" accept=".jpg,.jpeg,.png,.tiff,.tif,.pdf" required>
+                            <input type="file" id="fileInput" name="file" accept=".jpg,.jpeg,.png,.tiff,.tif,.bmp,.pdf">
                             <label for="fileInput" class="file-label">
                                 <i class="fas fa-file-image"></i>
                                 <span id="fileName">Choose File</span>
                             </label>
                         </div>
+                        
                         
                         <button type="submit" class="btn btn-primary" id="analyzeBtn">
                             <i class="fas fa-search"></i>
@@ -89,14 +94,14 @@
                     <form id="compareForm" enctype="multipart/form-data">
                         <div class="compare-inputs">
                             <div class="file-input-wrapper">
-                                <input type="file" id="compareFile1" name="image1" accept=".jpg,.jpeg,.png,.tiff,.tif,.pdf" required>
+                                <input type="file" id="compareFile1" name="image1" accept=".jpg,.jpeg,.png,.tiff,.tif,.bmp,.pdf" required>
                                 <label for="compareFile1" class="file-label">
                                     <i class="fas fa-file-image"></i>
                                     <span id="compareFileName1">First Image</span>
                                 </label>
                             </div>
                             <div class="file-input-wrapper">
-                                <input type="file" id="compareFile2" name="image2" accept=".jpg,.jpeg,.png,.tiff,.tif,.pdf" required>
+                                <input type="file" id="compareFile2" name="image2" accept=".jpg,.jpeg,.png,.tiff,.tif,.bmp,.pdf" required>
                                 <label for="compareFile2" class="file-label">
                                     <i class="fas fa-file-image"></i>
                                     <span id="compareFileName2">Second Image</span>
@@ -129,7 +134,7 @@
                     
                     <form id="tamperingForm" enctype="multipart/form-data">
                         <div class="file-input-wrapper">
-                            <input type="file" id="tamperingFile" name="file" accept=".jpg,.jpeg,.png,.tiff,.tif" required>
+                            <input type="file" id="tamperingFile" name="file" accept=".jpg,.jpeg,.png,.tiff,.tif,.bmp,.pdf" required>
                             <label for="tamperingFile" class="file-label">
                                 <i class="fas fa-file-image"></i>
                                 <span id="tamperingFileName">Choose File</span>
@@ -146,6 +151,55 @@
                         <p><i class="fas fa-info-circle"></i> Analyzes error levels, noise patterns, and metadata</p>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Batch Analysis Tab -->
+        <div id="batchTab" class="tab-content" style="display: none;">
+            <div class="upload-section">
+                <div class="upload-card">
+                    <div class="upload-icon">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                    <h2>Batch Scanner Analysis</h2>
+                    <p>Upload multiple documents to identify scanners and group by device</p>
+                    
+                    <form id="batchForm" enctype="multipart/form-data">
+                        <div class="batch-upload-area" id="batchDropZone">
+                            <i class="fas fa-cloud-upload-alt" style="font-size: 3rem; color: #667eea;"></i>
+                            <h3>Drag & Drop Files Here</h3>
+                            <p>or click to browse (you can select files multiple times from different folders)</p>
+                            <input type="file" id="batchFiles" name="files" accept=".jpg,.jpeg,.png,.tiff,.tif,.bmp,.pdf" multiple style="display: none;">
+                        </div>
+                        
+                        <div id="batchFileList" class="batch-file-list" style="display: none;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                <h4 style="margin: 0;">Selected Files:</h4>
+                                <button type="button" class="btn btn-secondary btn-sm" onclick="clearBatchFiles()" style="padding: 5px 10px; font-size: 0.85rem;">
+                                    <i class="fas fa-trash"></i> Clear All
+                                </button>
+                            </div>
+                            <ul id="batchFileItems"></ul>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary" id="batchBtn" style="display: none;">
+                            <i class="fas fa-layer-group"></i>
+                            Analyze Batch (<span id="batchCount">0</span> files)
+                        </button>
+                    </form>
+                    
+                    <div class="supported-formats">
+                        <p><i class="fas fa-info-circle"></i> Upload 2-20 scanned documents for batch analysis</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Batch Results Section -->
+        <div id="batchResults" class="results-section" style="display: none;">
+            <div class="results-card">
+                <h2><i class="fas fa-layer-group"></i> Batch Analysis Results</h2>
+                <div id="batchContent"></div>
             </div>
         </div>
 
@@ -295,25 +349,55 @@
                     </div>
                 </div>
 
-                <div class="details-section">
-                    <h3><i class="fas fa-microscope"></i> Feature Analysis</h3>
+                <div class="details-section feature-analysis-section">
+                    <div class="section-header">
+                        <h3><i class="fas fa-microscope"></i> Feature Analysis</h3>
+                        <span class="section-badge"><i class="fas fa-check-circle"></i> Forensic Grade</span>
+                    </div>
                     <div id="featuresSummary" class="features-grid"></div>
                 </div>
 
-                <div class="details-section">
-                    <h3><i class="fas fa-clipboard-list"></i> Forensic Details</h3>
+                <div class="details-section forensic-section">
+                    <div class="section-header">
+                        <h3><i class="fas fa-clipboard-list"></i> Forensic Details</h3>
+                        <span class="section-badge"><i class="fas fa-shield-alt"></i> Verified</span>
+                    </div>
                     <div class="forensic-details">
-                        <div class="detail-group">
-                            <h4>Primary Indicators</h4>
+                        <div class="detail-group primary-group">
+                            <div class="detail-header">
+                                <i class="fas fa-star"></i>
+                                <h4>Primary Indicators</h4>
+                            </div>
                             <ul id="primaryIndicators"></ul>
                         </div>
-                        <div class="detail-group">
-                            <h4>Secondary Indicators</h4>
+                        <div class="detail-group secondary-group">
+                            <div class="detail-header">
+                                <i class="fas fa-info-circle"></i>
+                                <h4>Secondary Indicators</h4>
+                            </div>
                             <ul id="secondaryIndicators"></ul>
                         </div>
-                        <div class="detail-group">
-                            <h4>Anomalies</h4>
+                        <div class="detail-group anomaly-group">
+                            <div class="detail-header">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <h4>Anomalies</h4>
+                            </div>
                             <ul id="anomalies"></ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Advanced Visualizations Section -->
+                <div class="viz-container" id="advancedVizSection" style="display: none;">
+                    <h3><i class="fas fa-chart-area"></i> Advanced Forensic Visualizations</h3>
+                    <div class="viz-grid">
+                        <div class="viz-item">
+                            <h4><i class="fas fa-th"></i> Noise Pattern Heatmap</h4>
+                            <canvas id="noiseHeatmap"></canvas>
+                        </div>
+                        <div class="viz-item">
+                            <h4><i class="fas fa-wave-square"></i> Frequency Domain Analysis</h4>
+                            <canvas id="frequencyChart"></canvas>
                         </div>
                     </div>
                 </div>
@@ -324,6 +408,9 @@
                     </button>
                     <button class="btn btn-info" onclick="exportJSON()">
                         <i class="fas fa-download"></i> Export JSON
+                    </button>
+                    <button class="btn btn-secondary" onclick="shareResults()">
+                        <i class="fas fa-share-alt"></i> Share Results
                     </button>
                 </div>
             </div>
@@ -359,6 +446,47 @@
                     </div>
                     <h3>Secure & Private</h3>
                     <p>All processing done locally, no data stored permanently</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Share Modal -->
+    <div id="shareModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-share-alt"></i> Share Analysis Results</h3>
+                <button class="modal-close" onclick="closeShareModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="share-options">
+                    <button class="share-option" onclick="shareViaEmail()">
+                        <i class="fas fa-envelope"></i>
+                        <span>Email</span>
+                    </button>
+                    <button class="share-option" onclick="copyResultsLink()">
+                        <i class="fas fa-link"></i>
+                        <span>Copy Link</span>
+                    </button>
+                    <button class="share-option" onclick="shareAsText()">
+                        <i class="fas fa-clipboard"></i>
+                        <span>Copy Text</span>
+                    </button>
+                    <button class="share-option" onclick="downloadPDFShare()">
+                        <i class="fas fa-file-pdf"></i>
+                        <span>Download PDF</span>
+                    </button>
+                </div>
+                
+                <div id="emailForm" class="email-form" style="display: none;">
+                    <h4>Send via Email</h4>
+                    <input type="email" id="recipientEmail" placeholder="Recipient email address" required>
+                    <textarea id="emailMessage" placeholder="Add a message (optional)" rows="3"></textarea>
+                    <button class="btn btn-primary" onclick="sendEmailReport()">
+                        <i class="fas fa-paper-plane"></i> Send Email
+                    </button>
                 </div>
             </div>
         </div>

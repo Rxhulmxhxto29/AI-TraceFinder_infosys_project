@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis History - TraceFinder</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .history-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+        .history-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .history-header h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+        
+        .history-header p {
+            margin: 0.5rem 0 0 0;
+            opacity: 0.9;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .stat-card .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            margin: 0.5rem 0;
+        }
+        
+        .stat-card .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .filters {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .filters select, .filters input {
+            padding: 0.5rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .filters button {
+            padding: 0.5rem 1.5rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            position: relative;
+            z-index: 10;
+            pointer-events: auto;
+        }
+        
+        .filters button:hover {
+            background: #5568d3;
+        }
+        
+        .filter-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .history-table-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .history-table thead {
+            background: #f8f9fa;
+        }
+        
+        .history-table th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        .history-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .history-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .confidence-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .confidence-high {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .confidence-medium {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .confidence-low {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn-small {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        
+        .btn-pdf {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .btn-pdf:hover {
+            background: #c0392b;
+        }
+        
+        .btn-details {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-details:hover {
+            background: #2980b9;
+        }
+        
+        .btn-delete {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background 0.3s;
+        }
+        
+        .btn-delete:hover {
+            background: #c0392b;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 3rem;
+            color: #999;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 3rem;
+        }
+        
+        .loading i {
+            font-size: 3rem;
+            color: #667eea;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <i class="fas fa-fingerprint"></i>
+                <span>TraceFinder</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="/">Home</a></li>
+                <li><a href="/history_page" class="active">History</a></li>
+                <li><a href="/about">About</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="history-container">
+        <div class="history-header">
+            <h1><i class="fas fa-history"></i> Analysis History</h1>
+            <p>View and manage all your forensic analysis records</p>
+        </div>
+
+        <!-- Statistics -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <i class="fas fa-fingerprint" style="color: #667eea; font-size: 2rem;"></i>
+                <div class="stat-value" id="totalAnalyses">-</div>
+                <div class="stat-label">Total Analyses</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-equals" style="color: #3498db; font-size: 2rem;"></i>
+                <div class="stat-value" id="totalComparisons">-</div>
+                <div class="stat-label">Comparisons</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-shield-alt" style="color: #e74c3c; font-size: 2rem;"></i>
+                <div class="stat-value" id="totalTampering">-</div>
+                <div class="stat-label">Tampering Checks</div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-chart-line" style="color: #2ecc71; font-size: 2rem;"></i>
+                <div class="stat-value" id="tamperingRate">-</div>
+                <div class="stat-label">Tampering Rate</div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters">
+            <div style="flex: 1; display: flex; gap: 0.5rem;">
+                <input type="text" id="searchInput" placeholder="🔍 Search by scanner brand, model..." style="flex: 1; min-width: 250px;">
+                <select id="filterType">
+                    <option value="all">All Types</option>
+                    <option value="scanner">Scanner Detection</option>
+                    <option value="comparison">Image Comparison</option>
+                    <option value="tampering">Tampering Detection</option>
+                </select>
+                
+                <select id="filterConfidence">
+                    <option value="all">All Confidence</option>
+                    <option value="high">High (>80%)</option>
+                    <option value="medium">Medium (50-80%)</option>
+                    <option value="low">Low (<50%)</option>
+                </select>
+                
+                <select id="filterDate">
+                    <option value="all">All Time</option>
+                    <option value="today">Today</option>
+                    <option value="week">Last Week</option>
+                    <option value="month">Last Month</option>
+                </select>
+                
+                <select id="filterLimit">
+                    <option value="10">Last 10</option>
+                    <option value="25">Last 25</option>
+                    <option value="50">Last 50</option>
+                    <option value="100">Last 100</option>
+                    <option value="all">Show All</option>
+                </select>
+            </div>
+            
+            <button onclick="applyFilters()" class="filter-button">
+                <i class="fas fa-filter"></i> Apply
+            </button>
+            
+            <button onclick="loadHistory()" class="filter-button">
+                <i class="fas fa-sync"></i> Refresh
+            </button>
+            
+            <button onclick="clearAllHistory()" class="filter-button" style="background: #e74c3c;">
+                <i class="fas fa-trash-alt"></i> Clear All
+            </button>
+        </div>
+
+        <!-- History Table -->
+        <div class="history-table-container">
+            <div class="loading" id="loadingIndicator">
+                <i class="fas fa-circle-notch"></i>
+                <p>Loading history...</p>
+            </div>
+            
+            <table class="history-table" id="historyTable" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Scanner/Details</th>
+                        <th>Confidence</th>
+                        <th>Date/Time</th>
+                        <th>Notes</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="historyTableBody">
+                </tbody>
+            </table>
+            
+            <div class="no-data" id="noData" style="display: none;">
+                <i class="fas fa-inbox" style="font-size: 4rem; color: #ddd;"></i>
+                <p>No analysis history found</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load history on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            loadHistory();
+        });
+
+        async function loadHistory() {
+            const type = 'all'; // Load all initially
+            const limit = 'all'; // Load all for filtering
+            
+            console.log('loadHistory called');
+            
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const historyTable = document.getElementById('historyTable');
+            const noData = document.getElementById('noData');
+            
+            console.log('Elements:', {loadingIndicator, historyTable, noData});
+            
+            loadingIndicator.style.display = 'block';
+            historyTable.style.display = 'none';
+            noData.style.display = 'none';
+            
+            try {
+                console.log('Fetching history...');
+                const response = await fetch(`/history?type=${type}&limit=${limit}`);
+                console.log('Response status:', response.status);
+                const data = await response.json();
+                console.log('History data:', data);
+                
+                if (data.success) {
+                    // Update statistics
+                    if (data.data.statistics) {
+                        const stats = data.data.statistics;
+                        document.getElementById('totalAnalyses').textContent = stats.total_analyses;
+                        document.getElementById('totalComparisons').textContent = stats.total_comparisons;
+                        document.getElementById('totalTampering').textContent = stats.total_tampering_checks;
+                        document.getElementById('tamperingRate').textContent = stats.tampering_rate + '%';
+                    }
+                    
+                    // Convert to unified format and store
+                    const unifiedData = unifyHistoryData(data.data);
+                    console.log('Unified data length:', unifiedData.length);
+                    storeHistoryData(unifiedData);
+                    
+                    // Apply current filters
+                    applyFilters();
+                    
+                    loadingIndicator.style.display = 'none';
+                    historyTable.style.display = 'table';
+                } else {
+                    throw new Error(data.error || 'Failed to load history');
+                }
+            } catch (error) {
+                console.error('Error loading history:', error);
+                loadingIndicator.style.display = 'none';
+                noData.style.display = 'block';
+            }
+        }
+        
+        function unifyHistoryData(data) {
+            const unified = [];
+            
+            // Scanner analyses
+            if (data.analyses) {
+                data.analyses.forEach(item => {
+                    unified.push({
+                        id: item.id,
+                        type: 'scanner',
+                        scanner_brand: item.scanner_brand,
+                        scanner_model: item.scanner_model,
+                        filename: item.filename,
+                        confidence: item.confidence,
+                        timestamp: item.timestamp,
+                        notes: item.notes || ''
+                    });
+                });
+            }
+            
+            // Comparisons
+            if (data.comparisons) {
+                data.comparisons.forEach(item => {
+                    unified.push({
+                        id: item.id,
+                        type: 'comparison',
+                        scanner_brand: item.match_status ? 'Match' : 'No Match',
+                        scanner_model: '',
+                        filename: item.filename1 + ', ' + item.filename2,
+                        confidence: item.similarity_score,
+                        timestamp: item.timestamp,
+                        notes: item.notes || ''
+                    });
+                });
+            }
+            
+            // Tampering checks
+            if (data.tampering_checks) {
+                data.tampering_checks.forEach(item => {
+                    unified.push({
+                        id: item.id,
+                        type: 'tampering',
+                        scanner_brand: item.is_tampered ? 'Tampered' : 'Authentic',
+                        scanner_model: '',
+                        filename: item.filename,
+                        confidence: item.confidence,
+                        timestamp: item.timestamp,
+                        notes: item.notes || ''
+                    });
+                });
+            }
+            
+            // Sort by timestamp descending
+            unified.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            return unified;
+        }
+
+        function displayHistory(data) {
+            const tbody = document.getElementById('historyBody');
+            tbody.innerHTML = '';
+            
+            let hasData = false;
+            
+            // Scanner analyses
+            if (data.analyses && data.analyses.length > 0) {
+                hasData = true;
+                data.analyses.forEach(item => {
+                    const row = createAnalysisRow(item);
+                    tbody.appendChild(row);
+                });
+            }
+            
+            // Comparisons
+            if (data.comparisons && data.comparisons.length > 0) {
+                hasData = true;
+                data.comparisons.forEach(item => {
+                    const row = createComparisonRow(item);
+                    tbody.appendChild(row);
+                });
+            }
+            
+            // Tampering checks
+            if (data.tampering_checks && data.tampering_checks.length > 0) {
+                hasData = true;
+                data.tampering_checks.forEach(item => {
+                    const row = createTamperingRow(item);
+                    tbody.appendChild(row);
+                });
+            }
+            
+            if (!hasData) {
+                document.getElementById('historyTable').style.display = 'none';
+                document.getElementById('noData').style.display = 'block';
+            }
+        }
+
+        function createAnalysisRow(item) {
+            const tr = document.createElement('tr');
+            
+            const confidenceClass = item.confidence >= 0.75 ? 'high' : (item.confidence >= 0.5 ? 'medium' : 'low');
+            const confidencePercent = (item.confidence * 100).toFixed(1);
+            
+            tr.innerHTML = `
+                <td>${formatDateTime(item.timestamp)}</td>
+                <td><i class="fas fa-file-image"></i> ${item.filename}</td>
+                <td><strong>${item.brand}</strong> ${item.model}</td>
+                <td><span class="confidence-badge confidence-${confidenceClass}">${confidencePercent}%</span></td>
+                <td>
+                    <div class="action-buttons">
+                        <a href="/download_pdf/${item.id}" class="btn-small btn-pdf">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </a>
+                        <button class="btn-small btn-delete" onclick="deleteRecord(${item.id}, 'scanner')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+            
+            return tr;
+        }
+
+        function createComparisonRow(item) {
+            const tr = document.createElement('tr');
+            
+            const similarity = (item.similarity * 100).toFixed(1);
+            
+            tr.innerHTML = `
+                <td>${formatDateTime(item.timestamp)}</td>
+                <td><i class="fas fa-equals"></i> ${item.file1} vs ${item.file2}</td>
+                <td>${item.status}</td>
+                <td><span class="confidence-badge confidence-medium">${similarity}%</span></td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="btn-small btn-delete" onclick="deleteRecord(${item.id}, 'comparison')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+            
+            return tr;
+        }
+
+        function createTamperingRow(item) {
+            const tr = document.createElement('tr');
+            
+            const confidenceClass = item.confidence >= 0.75 ? 'high' : (item.confidence >= 0.5 ? 'medium' : 'low');
+            const confidencePercent = (item.confidence * 100).toFixed(1);
+            
+            tr.innerHTML = `
+                <td>${formatDateTime(item.timestamp)}</td>
+                <td><i class="fas fa-shield-alt"></i> ${item.filename}</td>
+                <td>${item.tampering_detected ? '<span style="color: #e74c3c;">⚠️ Tampering Detected</span>' : '<span style="color: #2ecc71;">✓ No Tampering</span>'}</td>
+                <td><span class="confidence-badge confidence-${confidenceClass}">${confidencePercent}%</span></td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="btn-small btn-delete" onclick="deleteRecord(${item.id}, 'tampering')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+            
+            return tr;
+        }
+
+        async function deleteRecord(recordId, type) {
+            if (!confirm('Are you sure you want to delete this record? This action cannot be undone.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/history/delete/${recordId}?type=${type}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('Record deleted successfully', 'success');
+                    loadHistory();
+                } else {
+                    showNotification(data.error || 'Failed to delete record', 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting record:', error);
+                showNotification('An error occurred while deleting the record', 'error');
+            }
+        }
+
+        async function clearAllHistory() {
+            if (!confirm('Are you sure you want to clear ALL history? This will delete all scanner analyses, comparisons, and tampering checks. This action cannot be undone!')) {
+                return;
+            }
+            
+            if (!confirm('This is your final warning. ALL history will be permanently deleted. Continue?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/history/clear', {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('All history cleared successfully', 'success');
+                    loadHistory();
+                } else {
+                    showNotification(data.error || 'Failed to clear history', 'error');
+                }
+            } catch (error) {
+                console.error('Error clearing history:', error);
+                showNotification('An error occurred while clearing history', 'error');
+            }
+        }
+
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 1rem 1.5rem;
+                background: ${type === 'success' ? '#2ecc71' : '#e74c3c'};
+                color: white;
+                border-radius: 5px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                z-index: 9999;
+                animation: slideIn 0.3s ease;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        function formatDateTime(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            });
+        }
+        
+        // Dark Mode Toggle
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        if (darkModeToggle) {
+            const savedTheme = localStorage.getItem('darkMode');
+            
+            if (savedTheme === 'enabled') {
+                document.body.classList.add('dark-mode');
+                darkModeToggle.checked = true;
+            }
+            
+            darkModeToggle.addEventListener('change', function() {
+                if (this.checked) {
+                    document.body.classList.add('dark-mode');
+                    localStorage.setItem('darkMode', 'enabled');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                    localStorage.setItem('darkMode', 'disabled');
+                }
+            });
+        }
+        
+        // Search and Filter Functionality
+        let allHistoryData = [];
+        
+        // Store all data when loaded
+        function storeHistoryData(data) {
+            allHistoryData = data;
+        }
+        
+        // Apply filters and search
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const filterType = document.getElementById('filterType').value;
+            const filterConfidence = document.getElementById('filterConfidence').value;
+            const filterDate = document.getElementById('filterDate').value;
+            const filterLimit = document.getElementById('filterLimit').value;
+            
+            let filtered = allHistoryData.filter(item => {
+                // Search filter
+                if (searchTerm) {
+                    const searchText = [
+                        item.scanner_brand,
+                        item.scanner_model,
+                        item.filename
+                    ].join(' ').toLowerCase();
+                    
+                    if (!searchText.includes(searchTerm)) {
+                        return false;
+                    }
+                }
+                
+                // Type filter
+                if (filterType !== 'all' && item.type !== filterType) {
+                    return false;
+                }
+                
+                // Confidence filter
+                if (filterConfidence !== 'all') {
+                    const confidence = parseFloat(item.confidence) || 0;
+                    if (filterConfidence === 'high' && confidence <= 80) return false;
+                    if (filterConfidence === 'medium' && (confidence < 50 || confidence > 80)) return false;
+                    if (filterConfidence === 'low' && confidence >= 50) return false;
+                }
+                
+                // Date filter
+                if (filterDate !== 'all') {
+                    const itemDate = new Date(item.timestamp);
+                    const now = new Date();
+                    const diffDays = Math.floor((now - itemDate) / (1000 * 60 * 60 * 24));
+                    
+                    if (filterDate === 'today' && diffDays > 0) return false;
+                    if (filterDate === 'week' && diffDays > 7) return false;
+                    if (filterDate === 'month' && diffDays > 30) return false;
+                }
+                
+                return true;
+            });
+            
+            // Apply limit
+            if (filterLimit !== 'all') {
+                const limit = parseInt(filterLimit);
+                filtered = filtered.slice(0, limit);
+            }
+            
+            displayFilteredResults(filtered);
+        }
+        
+        function displayFilteredResults(filtered) {
+            const tbody = document.getElementById('historyTableBody');
+            tbody.innerHTML = '';
+            
+            if (filtered.length === 0) {
+                const noResultsRow = tbody.insertRow();
+                const cell = noResultsRow.insertCell(0);
+                cell.colSpan = 6;
+                cell.style.textAlign = 'center';
+                cell.style.padding = '2rem';
+                cell.innerHTML = '<i class="fas fa-search"></i><br>No results found matching your filters';
+                return;
+            }
+            
+            filtered.forEach(item => {
+                const row = tbody.insertRow();
+                
+                // Type
+                const typeCell = row.insertCell(0);
+                typeCell.innerHTML = `<i class="fas fa-${getTypeIcon(item.type)}"></i> ${item.type}`;
+                
+                // Scanner/Details
+                const detailsCell = row.insertCell(1);
+                detailsCell.textContent = item.scanner_brand && item.scanner_model 
+                    ? `${item.scanner_brand} ${item.scanner_model}`
+                    : item.filename || '-';
+                
+                // Confidence
+                const confCell = row.insertCell(2);
+                const confidence = (parseFloat(item.confidence) || 0) * 100;
+                const confClass = confidence > 80 ? 'high' : confidence > 50 ? 'medium' : 'low';
+                confCell.innerHTML = `<span class="confidence-badge confidence-${confClass}">${confidence.toFixed(1)}%</span>`;
+                
+                // Date
+                const dateCell = row.insertCell(3);
+                dateCell.textContent = formatDateTime(item.timestamp);
+                
+                // Notes
+                const notesCell = row.insertCell(4);
+                const notesText = item.notes || '';
+                const displayNotes = notesText.length > 30 ? notesText.substring(0, 30) + '...' : notesText;
+                notesCell.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span id="notes-${item.id}" style="flex: 1; font-size: 0.9rem; color: #666;" title="${notesText}">${displayNotes || '<i style="color: #ccc;">No notes</i>'}</span>
+                        <button onclick="editNotes(${item.id}, '${item.type}')" class="btn-small" style="background: #3498db; color: white; padding: 0.3rem 0.6rem;" title="Edit Notes">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </div>
+                `;
+                
+                // Actions
+                const actionsCell = row.insertCell(5);
+                actionsCell.innerHTML = `
+                    <div class="action-buttons">
+                        <a href="/download_pdf/${item.id}" class="btn-small btn-pdf" title="Download PDF">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </a>
+                        <button onclick="deleteHistoryItem(${item.id}, '${item.type}')" class="btn-delete" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+            });
+            
+            // Update results count
+            document.querySelector('.history-header p').textContent = 
+                `Showing ${filtered.length} of ${allHistoryData.length} analyses`;
+        }
+        
+        function getTypeIcon(type) {
+            const icons = {
+                'scanner': 'fingerprint',
+                'comparison': 'equals',
+                'tampering': 'shield-alt'
+            };
+            return icons[type] || 'file';
+        }
+        
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('filterType').value = 'all';
+            document.getElementById('filterConfidence').value = 'all';
+            document.getElementById('filterDate').value = 'all';
+            document.getElementById('filterLimit').value = '10';
+            applyFilters();
+            console.log('Filters reset');
+        }
+        
+        // Add search on input
+        document.getElementById('searchInput').addEventListener('input', applyFilters);
+        
+        // Delete History Item
+        async function deleteHistoryItem(analysisId, analysisType) {
+            if (!confirm('Are you sure you want to delete this record?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/history/delete/${analysisId}?type=${analysisType}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('Record deleted successfully', 'success');
+                    loadHistory();
+                } else {
+                    showNotification(data.error || 'Failed to delete record', 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting record:', error);
+                showNotification('An error occurred while deleting the record', 'error');
+            }
+        }
+        
+        // Edit Notes Function
+        async function editNotes(analysisId, analysisType) {
+            // Prompt for notes
+            const currentItem = allHistoryData.find(item => item.id === analysisId && item.type === analysisType);
+            const currentNotes = currentItem ? currentItem.notes : '';
+            
+            const newNotes = prompt('Enter notes for this analysis:', currentNotes);
+            
+            if (newNotes === null) {
+                return; // User cancelled
+            }
+            
+            try {
+                const response = await fetch(`/history/notes/${analysisId}?type=${analysisType}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ notes: newNotes })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('Notes updated successfully', 'success');
+                    
+                    // Update the item in allHistoryData
+                    const item = allHistoryData.find(i => i.id === analysisId && i.type === analysisType);
+                    if (item) {
+                        item.notes = newNotes;
+                    }
+                    
+                    // Refresh display
+                    applyFilters();
+                } else {
+                    showNotification(data.error || 'Failed to update notes', 'error');
+                }
+            } catch (error) {
+                console.error('Error updating notes:', error);
+                showNotification('An error occurred while updating notes', 'error');
+            }
+        }
+    </script>
+</body>
+</html>
+
