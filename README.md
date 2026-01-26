@@ -8,19 +8,22 @@
 
 ## 🌐 Live Demo
 
-**🚀 Deploy Your Own Instance on Render (100% Free)**
+### 🚀 Deploy on Vercel (Recommended - 1-Click Deploy)
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/AI-TraceFinder/Rahul_Mahato-TraceFinder)
+
+**Quick Deployment Steps:**
+1. Click the "Deploy with Vercel" button above
+2. Sign in with GitHub (100% free, no credit card needed)
+3. Your app will be live in 2-3 minutes at `https://your-app-name.vercel.app`
+
+✅ **Instant Deployment** | ✅ **Global CDN** | ✅ **Auto HTTPS** | ✅ **Free Forever**
+
+---
+
+### Alternative: Deploy on Render
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/AI-TraceFinder/Rahul_Mahato-TraceFinder)
-
-### Easy 3-Step Deployment:
-
-1. **Click** the "Deploy to Render" button above
-2. **Sign in** with your GitHub account (free)
-3. **Deploy** - Your app will be live in 3-5 minutes!
-
-Your live URL: `https://your-app-name.onrender.com`
-
-✅ **100% Free** | ✅ **No Credit Card** | ✅ **Always Online**
 
 ## 🎯 Overview
 
