@@ -394,6 +394,12 @@ function createDashboardCharts(results) {
     
     const confidenceCtx = document.getElementById('confidenceChart');
     if (confidenceCtx) {
+        // Destroy existing chart if it exists
+        const existingChart = Chart.getChart(confidenceCtx);
+        if (existingChart) {
+            existingChart.destroy();
+        }
+        
         new Chart(confidenceCtx, {
             type: 'doughnut',
             data: {
@@ -419,6 +425,12 @@ function createDashboardCharts(results) {
     // Feature Quality Metrics Chart
     const featureCtx = document.getElementById('featureQualityChart');
     if (featureCtx) {
+        // Destroy existing chart if it exists
+        const existingFeatureChart = Chart.getChart(featureCtx);
+        if (existingFeatureChart) {
+            existingFeatureChart.destroy();
+        }
+        
         new Chart(featureCtx, {
             type: 'radar',
             data: {
@@ -693,23 +705,31 @@ function showTab(tabName) {
         document.getElementById('compareResults').style.display = 'none';
         document.getElementById('tamperingResults').style.display = 'none';
         document.getElementById('batchResults').style.display = 'none';
+    } else if (tabName === 'fingerprints') {
+        document.getElementById('fingerprintsTab').style.display = 'block';
+        document.querySelectorAll('.tab-btn')[1].classList.add('active');
+        document.getElementById('resultsSection').style.display = 'none';
+        document.getElementById('compareResults').style.display = 'none';
+        document.getElementById('tamperingResults').style.display = 'none';
+        document.getElementById('batchResults').style.display = 'none';
+        loadScannerFingerprints();
     } else if (tabName === 'compare') {
         document.getElementById('compareTab').style.display = 'block';
-        document.querySelectorAll('.tab-btn')[1].classList.add('active');
+        document.querySelectorAll('.tab-btn')[2].classList.add('active');
         document.getElementById('resultsSection').style.display = 'none';
         document.getElementById('compareResults').style.display = document.getElementById('compareContent').innerHTML ? 'block' : 'none';
         document.getElementById('tamperingResults').style.display = 'none';
         document.getElementById('batchResults').style.display = 'none';
     } else if (tabName === 'batch') {
         document.getElementById('batchTab').style.display = 'block';
-        document.querySelectorAll('.tab-btn')[2].classList.add('active');
+        document.querySelectorAll('.tab-btn')[3].classList.add('active');
         document.getElementById('resultsSection').style.display = 'none';
         document.getElementById('compareResults').style.display = 'none';
         document.getElementById('tamperingResults').style.display = 'none';
         document.getElementById('batchResults').style.display = document.getElementById('batchContent').innerHTML ? 'block' : 'none';
     } else if (tabName === 'tampering') {
         document.getElementById('tamperingTab').style.display = 'block';
-        document.querySelectorAll('.tab-btn')[3].classList.add('active');
+        document.querySelectorAll('.tab-btn')[4].classList.add('active');
         document.getElementById('resultsSection').style.display = 'none';
         document.getElementById('compareResults').style.display = 'none';
         document.getElementById('tamperingResults').style.display = document.getElementById('tamperingContent').innerHTML ? 'block' : 'none';

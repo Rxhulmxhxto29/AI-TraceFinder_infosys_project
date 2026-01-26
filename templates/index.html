@@ -12,22 +12,43 @@
     <nav class="navbar">
         <div class="container">
             <div class="nav-brand">
-                <i class="fas fa-fingerprint"></i>
-                <span>TraceFinder</span>
+                <div class="logo-icon-wrapper">
+                    <i class="fas fa-fingerprint"></i>
+                </div>
+                <div class="brand-text">
+                    <span class="brand-name">TraceFinder</span>
+                    <span class="brand-tagline">Forensic Intelligence</span>
+                </div>
+                <span class="badge-pro">PRO</span>
             </div>
             <ul class="nav-menu">
-                <li><a href="/" class="active">Home</a></li>
-                <li><a href="/history_page">History</a></li>
-                <li><a href="/about">About</a></li>
-                <li><a href="#" onclick="showHelp()">Help</a></li>
+                <li><a href="/" class="active"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="/history_page"><i class="fas fa-history"></i> History</a></li>
+                <li><a href="/about"><i class="fas fa-info-circle"></i> About</a></li>
+                <li><a href="#" onclick="showHelp()"><i class="fas fa-question-circle"></i> Help</a></li>
             </ul>
         </div>
     </nav>
 
     <div class="hero">
         <div class="container">
+            <div class="hero-badge">🔬 AI-Powered Analysis</div>
             <h1>Forensic Scanner Identification System</h1>
-            <p class="subtitle">Advanced digital forensics for scanner device identification</p>
+            <p class="subtitle">Advanced digital forensics for scanner device identification with machine learning intelligence</p>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>95% Accuracy</span>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-bolt"></i>
+                    <span>Real-time Analysis</span>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Secure & Reliable</span>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -36,6 +57,9 @@
         <div class="feature-tabs">
             <button class="tab-btn active" onclick="showTab('scanner')">
                 <i class="fas fa-fingerprint"></i> Scanner Detection
+            </button>
+            <button class="tab-btn" onclick="showTab('fingerprints')">
+                <i class="fas fa-id-card"></i> Scanner Fingerprints
             </button>
             <button class="tab-btn" onclick="showTab('compare')">
                 <i class="fas fa-equals"></i> Image Comparison
@@ -117,6 +141,23 @@
                     
                     <div class="supported-formats">
                         <p><i class="fas fa-info-circle"></i> Upload two scanned documents for comparison</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scanner Fingerprints Tab -->
+        <div id="fingerprintsTab" class="tab-content" style="display: none;">
+            <div class="fingerprints-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-id-card"></i> Scanner Fingerprint Gallery</h2>
+                    <p>Unique visual signatures of each scanner in your database</p>
+                </div>
+                
+                <div id="fingerprintsGallery" class="fingerprints-gallery">
+                    <div class="loading-fingerprints">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Loading scanner fingerprints...</p>
                     </div>
                 </div>
             </div>
@@ -500,5 +541,6 @@
     </footer>
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/fingerprints.js') }}"></script>
 </body>
 </html>
