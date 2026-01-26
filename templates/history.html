@@ -537,8 +537,12 @@
         function createAnalysisRow(item) {
             const tr = document.createElement('tr');
             
-            const confidenceClass = item.confidence >= 0.75 ? 'high' : (item.confidence >= 0.5 ? 'medium' : 'low');
-            const confidencePercent = (item.confidence * 100).toFixed(1);
+            // Normalize confidence: if > 1, it's already a percentage, divide by 100
+            let confidence = item.confidence;
+            if (confidence > 1.0) confidence = confidence / 100.0;
+            
+            const confidenceClass = confidence >= 0.75 ? 'high' : (confidence >= 0.5 ? 'medium' : 'low');
+            const confidencePercent = (confidence * 100).toFixed(1);
             
             tr.innerHTML = `
                 <td>${formatDateTime(item.timestamp)}</td>
@@ -585,8 +589,12 @@
         function createTamperingRow(item) {
             const tr = document.createElement('tr');
             
-            const confidenceClass = item.confidence >= 0.75 ? 'high' : (item.confidence >= 0.5 ? 'medium' : 'low');
-            const confidencePercent = (item.confidence * 100).toFixed(1);
+            // Normalize confidence: if > 1, it's already a percentage, divide by 100
+            let confidence = item.confidence;
+            if (confidence > 1.0) confidence = confidence / 100.0;
+            
+            const confidenceClass = confidence >= 0.75 ? 'high' : (confidence >= 0.5 ? 'medium' : 'low');
+            const confidencePercent = (confidence * 100).toFixed(1);
             
             tr.innerHTML = `
                 <td>${formatDateTime(item.timestamp)}</td>
@@ -808,7 +816,10 @@
                 
                 // Confidence
                 const confCell = row.insertCell(2);
-                const confidence = (parseFloat(item.confidence) || 0) * 100;
+                let confidenceValue = parseFloat(item.confidence) || 0;
+                // Normalize: if > 1, it's already a percentage, divide by 100
+                if (confidenceValue > 1.0) confidenceValue = confidenceValue / 100.0;
+                const confidence = confidenceValue * 100;
                 const confClass = confidence > 80 ? 'high' : confidence > 50 ? 'medium' : 'low';
                 confCell.innerHTML = `<span class="confidence-badge confidence-${confClass}">${confidence.toFixed(1)}%</span>`;
                 

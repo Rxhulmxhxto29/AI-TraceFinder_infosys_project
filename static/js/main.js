@@ -236,7 +236,9 @@ function displayResults(results) {
     document.getElementById('scannerModel').textContent = results.scanner_model || 'Unknown';
     
     // Confidence score - handle NaN and undefined
-    const confidenceValue = results.confidence || 0;
+    // Normalize: if value > 1, it's already a percentage, else multiply by 100
+    let confidenceValue = results.confidence || 0;
+    if (confidenceValue > 1.0) confidenceValue = confidenceValue / 100.0;
     const confidence = isNaN(confidenceValue) ? 0 : (confidenceValue * 100).toFixed(1);
     document.getElementById('confidenceScore').textContent = confidence + '%';
     document.getElementById('confidenceLevel').textContent = results.confidence_level || 'N/A';
@@ -389,7 +391,9 @@ function updateStatCards(results) {
 // Create dashboard charts
 function createDashboardCharts(results) {
     // Confidence Distribution Chart
-    const confidenceValue = (results.confidence || 0) * 100;
+    let confVal = results.confidence || 0;
+    if (confVal > 1.0) confVal = confVal / 100.0;
+    const confidenceValue = confVal * 100;
     const uncertaintyValue = 100 - confidenceValue;
     
     const confidenceCtx = document.getElementById('confidenceChart');
@@ -1280,7 +1284,9 @@ function displayBatchResults(data) {
         <div class="batch-results-grid">
             ${data.results.map(result => {
                 if (result.success) {
-                    const confidence = (result.result.confidence * 100).toFixed(1);
+                    let confVal = result.result.confidence || 0;
+                    if (confVal > 1.0) confVal = confVal / 100.0;
+                    const confidence = (confVal * 100).toFixed(1);
                     return `
                         <div class="batch-result-card success">
                             <h4><i class="fas fa-check-circle" style="color: var(--success-color);"></i> ${result.filename}</h4>
@@ -1434,7 +1440,7 @@ async function sendEmailReport() {
 Scanner Detection Results:
 - Brand: ${currentResults.scanner_brand || 'Unknown'}
 - Model: ${currentResults.scanner_model || 'Unknown'}  
-- Confidence: ${(currentResults.confidence * 100).toFixed(1)}%
+- Confidence: ${((currentResults.confidence > 1.0 ? currentResults.confidence / 100.0 : currentResults.confidence) * 100).toFixed(1)}%
 
 ${message ? '\nMessage: ' + message : ''}
 
@@ -1473,7 +1479,7 @@ function shareAsText() {
 Scanner Detection:
 Brand: ${currentResults.scanner_brand || 'Unknown'}
 Model: ${currentResults.scanner_model || 'Unknown'}
-Confidence: ${(currentResults.confidence * 100).toFixed(1)}%
+Confidence: ${((currentResults.confidence > 1.0 ? currentResults.confidence / 100.0 : currentResults.confidence) * 100).toFixed(1)}%
 Detection Method: ${currentResults.method || 'Machine Learning'}
 
 Generated: ${new Date().toLocaleString()}

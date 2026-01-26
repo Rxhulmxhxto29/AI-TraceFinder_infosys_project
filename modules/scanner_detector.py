@@ -49,7 +49,7 @@ class ScannerDetector:
                 print("✓ Using trained model for scanner detection")
                 return True
             else:
-                print("⚠ No trained model found - using demo mode with hardcoded patterns")
+                print("⚠ No trained model found - using EXIF metadata detection only")
                 return False
                 
         except Exception as e:
@@ -110,39 +110,49 @@ class ScannerDetector:
                     'error': 'Failed to process image'
                 }
             
-            # Extract metadata FIRST - prioritize it
+            # Extract metadata
             metadata = self._extract_metadata(image_path)
             
-            # Check if we have clear scanner info in metadata
-            metadata_brand = self._check_metadata_brand(metadata)
-            metadata_model = metadata.get('exif_data', {}).get('Image Model', 'Unknown')
-            
-            # If metadata has clear scanner info, use it with high confidence
-            if metadata_brand and metadata_brand in ['HP', 'Canon', 'Epson', 'Brother', 'Fujitsu']:
-                return {
-                    'success': True,
-                    'scanner_brand': metadata_brand,
-                    'scanner_model': str(metadata_model),
-                    'confidence': 0.95,  # High confidence from metadata
-                    'confidence_level': 'Very High',
-                    'analysis_date': datetime.now().isoformat(),
-                    'features_summary': {'Detection Method': 'EXIF Metadata'},
-                    'metadata': metadata,
-                    'detailed_analysis': {
-                        'primary_indicators': [f'Scanner identified from EXIF metadata: {metadata_brand} {metadata_model}'],
-                        'secondary_indicators': ['Metadata provides reliable scanner identification'],
-                        'anomalies': ['No anomalies detected - clean scan', 'EXIF metadata intact and consistent']
-                    }
-                }
-            
-            # If no metadata, fall back to feature analysis
+            # Extract features from image
             features = self.feature_extractor.extract_all_features(image_data)
             
-            # Identify scanner
-            detection_results = self._identify_scanner(features, metadata)
+            # Check EXIF metadata first (most reliable)
+            metadata_brand = self._check_metadata_brand(metadata)
+            metadata_model = metadata.get('exif_data', {}).get('Image Model', '')
+            has_reliable_metadata = metadata_brand and metadata_brand in ['HP', 'Canon', 'Epson', 'Brother', 'Fujitsu']
             
-            # Calculate confidence
-            confidence = self._calculate_confidence(features, detection_results)
+            if has_reliable_metadata:
+                # Use EXIF metadata as primary source
+                detection_results = {
+                    'brand': metadata_brand,
+                    'model': metadata_model if metadata_model else metadata_brand,
+                    'scores': {metadata_brand: 0.95},
+                    'confidence': 0.95,
+                    'metadata_match': True,
+                    'details': {
+                        'primary_indicators': [f"EXIF metadata: {metadata_brand}"],
+                        'secondary_indicators': [f"Model: {metadata_model}"] if metadata_model else [],
+                        'anomalies': []
+                    },
+                    'using_trained_model': False
+                }
+                confidence = 0.95
+                
+                # Use ML model as supporting evidence only
+                if self.use_trained_model:
+                    ml_results = self._identify_with_trained_model(features, metadata)
+                    if ml_results['brand'] == metadata_brand:
+                        detection_results['details']['secondary_indicators'].append(f"ML model confirms: {ml_results['confidence']*100:.1f}% confidence")
+                    else:
+                        detection_results['details']['anomalies'].append(f"ML model suggests {ml_results['brand']} ({ml_results['confidence']*100:.1f}%)")
+            else:
+                # No reliable EXIF - use ML model or signatures
+                detection_results = self._identify_scanner(features, metadata)
+                confidence = self._calculate_confidence(features, detection_results)
+            
+            # Ensure confidence is always between 0.0 and 1.0
+            if confidence > 1.0:
+                confidence = confidence / 100.0
             
             return {
                 'success': True,
@@ -238,9 +248,35 @@ class ScannerDetector:
             prediction = self.trained_model.predict(X)[0]
             probabilities = self.trained_model.predict_proba(X)[0]
             
-            # Get scanner name
-            scanner_full = self.label_encoder.inverse_transform([prediction])[0]
-            confidence = float(probabilities[prediction])
+            # Get scanner name (prediction is already a string from the model)
+            scanner_full = prediction
+            
+            # Get confidence - find the index of the predicted class
+            predicted_index = list(self.label_encoder.classes_).index(prediction)
+            confidence = float(probabilities[predicted_index])
+            
+            # Check if confidence is below threshold - return Unknown if so
+            if confidence < self.confidence_threshold:
+                # Get top predictions for details
+                top_indices = np.argsort(probabilities)[-3:][::-1]
+                brand_scores = {
+                    self.label_encoder.classes_[idx]: float(probabilities[idx])
+                    for idx in top_indices
+                }
+                
+                return {
+                    'brand': 'Unknown',
+                    'model': 'Unknown Scanner',
+                    'scores': brand_scores,
+                    'confidence': confidence,
+                    'metadata_match': False,
+                    'details': {
+                        'primary_indicators': [f"Low confidence: {confidence*100:.1f}% (threshold: {self.confidence_threshold*100:.1f}%)"],
+                        'secondary_indicators': [f"This may not be a scanned document or the scanner model is not in our database"],
+                        'anomalies': ['Unable to confidently identify scanner - confidence below threshold']
+                    },
+                    'using_trained_model': True
+                }
             
             # Split brand and model
             if '-' in scanner_full:
@@ -258,7 +294,7 @@ class ScannerDetector:
             # Get top predictions
             top_indices = np.argsort(probabilities)[-3:][::-1]
             brand_scores = {
-                self.label_encoder.inverse_transform([idx])[0]: float(probabilities[idx])
+                self.label_encoder.classes_[idx]: float(probabilities[idx])
                 for idx in top_indices
             }
             
