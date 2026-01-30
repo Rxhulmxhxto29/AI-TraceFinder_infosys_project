@@ -412,7 +412,9 @@
                     // Update statistics
                     if (data.data.statistics) {
                         const stats = data.data.statistics;
-                        document.getElementById('totalAnalyses').textContent = stats.total_analyses;
+                        // Use total_records if available, otherwise fallback to total_analyses
+                        const totalRecords = stats.total_records || stats.total_analyses;
+                        document.getElementById('totalAnalyses').textContent = totalRecords;
                         document.getElementById('totalComparisons').textContent = stats.total_comparisons;
                         document.getElementById('totalTampering').textContent = stats.total_tampering_checks;
                         document.getElementById('tamperingRate').textContent = stats.tampering_rate + '%';
@@ -758,10 +760,13 @@
                 
                 // Confidence filter
                 if (filterConfidence !== 'all') {
-                    const confidence = parseFloat(item.confidence) || 0;
-                    if (filterConfidence === 'high' && confidence <= 80) return false;
-                    if (filterConfidence === 'medium' && (confidence < 50 || confidence > 80)) return false;
-                    if (filterConfidence === 'low' && confidence >= 50) return false;
+                    let confidence = parseFloat(item.confidence) || 0;
+                    // Normalize confidence: if > 1, it's already a percentage, divide by 100
+                    if (confidence > 1.0) confidence = confidence / 100.0;
+                    
+                    if (filterConfidence === 'high' && confidence < 0.8) return false;
+                    if (filterConfidence === 'medium' && (confidence < 0.5 || confidence >= 0.8)) return false;
+                    if (filterConfidence === 'low' && confidence >= 0.5) return false;
                 }
                 
                 // Date filter

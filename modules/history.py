@@ -371,10 +371,14 @@ class AnalysisHistory:
             
             conn.close()
             
+            # Calculate total records (all types combined)
+            total_records = total_analyses + total_comparisons + total_tampering
+            
             return {
                 'total_analyses': total_analyses,
                 'total_comparisons': total_comparisons,
                 'total_tampering_checks': total_tampering,
+                'total_records': total_records,
                 'top_brands': top_brands,
                 'tampering_rate': round(tampering_rate, 2)
             }
