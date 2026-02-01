@@ -132,7 +132,7 @@ class ScannerDetector:
                     'details': {
                         'primary_indicators': [f"EXIF metadata: {metadata_brand}"],
                         'secondary_indicators': [f"Model: {metadata_model}"] if metadata_model else [],
-                        'anomalies': []
+                        'anomalies': self._detect_anomalies(features)
                     },
                     'using_trained_model': False
                 }
