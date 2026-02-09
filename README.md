@@ -1,3 +1,7 @@
+## 🎥 Demo Video
+
+Watch the full demonstration on LinkedIn: [TraceFinder Demo Video](https://www.linkedin.com/posts/rahul-mahato-0b1534254_infosysspringboard-tracefinder-ai-activity-7424065147620724737-7-sC?utm_source=share&utm_medium=member_desktop)
+
 # TraceFinder - Forensic Scanner Identification System
 
 [![Python 3.13](https://img.shields.io/badge/python-3.13-blue.svg)](https://www.python.org/downloads/)
